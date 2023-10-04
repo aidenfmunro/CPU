@@ -1,0 +1,8 @@
+push 1000
+push 7
+sub
+push 10
+push 10
+mul
+sub
+hlt
