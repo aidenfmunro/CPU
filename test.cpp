@@ -10,6 +10,7 @@ int main(void)
     char* b;
 
     fscanf(fp, "%s %lg", b, &a);
+
     char* line = "   -100";
     char* end = NULL;
     long num = strtol(line, &end, 10);
