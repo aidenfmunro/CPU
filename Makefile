@@ -1,10 +1,10 @@
 
 IFLAGS = -I./headers/
 
-all: a object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o
+all: a object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o
 
-a: object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o
-	g++ object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o -g
+a: object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o
+	g++ object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o -g
 
 object/main.o: src/main.cpp
 	g++ $(IFLAGS) $(CFLAGS) -c src/main.cpp -o object/main.o -g
@@ -17,4 +17,8 @@ object/textfuncs.o: src/textfuncs.cpp
 
 object/spu.o: src/spu.cpp
 	g++ $(IFLAGS) $(CFLAGS) -c src/spu.cpp -o object/spu.o -g 
+
+object/assembler.o: src/assembler.cpp
+	g++ $(IFLAGS) $(CFLAGS) -c src/assembler.cpp -o object/assembler.o -g 
+
 	

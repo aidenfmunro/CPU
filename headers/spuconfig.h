@@ -4,22 +4,37 @@
 #include "stackfuncs.h"
 #include "textfuncs.h"
 
+typedef char byte;
+
+const int nREGS = 4;
+
 enum Instruction
 {
-    HLT = -1,
-    IN = 0,
+
     PUSH = 1,
-    ADD = 2,
-    SUB = 3,
-    MUL = 4,
-    DIV = 5,
-    SQRT = 6,
-    SIN = 7,
-    COS = 8,
-    OUT = 9
+    POP  = 2,
+    IN   = 3,
+    ADD  = 4,
+    SUB  = 5,
+    MUL  = 6,
+    DIV  = 7,
+    SQRT = 8,
+    SIN  = 9,
+    COS  = 10,
+    OUT  = 11,
+    HLT  = 12
 };
 
-void followInstructions(stack_t* stack, Text* text);
+struct CPU
+{
+    Stack* stack;
+
+    elem_t regs[nREGS];
+    
+    byte* code;
+};
+
+void followInstructions(Stack* stack, Text* text);
 
 void Proccess(void);
 

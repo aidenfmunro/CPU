@@ -1,8 +1,12 @@
-push 1000
+push rbx+5
 push 7
 sub
 push 10
 push 10
 mul
 sub
+push 10
+add
+push 20
+add
 hlt

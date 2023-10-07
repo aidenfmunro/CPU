@@ -10,20 +10,17 @@ void Proccess(void)
 {
     const char* filename = "comms.txt";
 
-    stack_t stack = {};
+    Stack stack = {};
 
     Text text = {};
 
-    StackInit(stack);
-
-    Push(&stack, 0);
+    CreateStack(stack);
 
     CreateText(&text, filename, NONE);
 
-    followInstructions(&stack, &text);
 }
 
-void followInstructions(stack_t* stack, Text* text)
+void followInstructions(Stack* stack, Text* text)
 {
 
     for (size_t i = 0; i < text->numLines; i++)

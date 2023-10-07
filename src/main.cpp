@@ -1,7 +1,17 @@
 #include <stdio.h>
 #include "spuconfig.h"
+#include "assembler.h"
 
 int main(void)
 {
-    Proccess();
+    CPU cpu = {};
+
+    Text text = {};
+
+    CreateText(&text, "comms.txt", NONE);
+
+    cpu.code = Compile(&text, &cpu);
+
+    printbytecode(&text, &cpu);
+
 }
