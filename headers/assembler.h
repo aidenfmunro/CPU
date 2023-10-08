@@ -7,9 +7,9 @@ byte* Compile(Text* initialText, CPU* spu);
 
 const int SHIFT = 8;
 
-const int REG_ON = 5;
+const char ARG_FORMAT_REG = (1 << 5);
 
-const int IMMED_ON = 4;
+const char ARG_FORMAT_IMMED = (1 << 4);
 
 typedef int CommandCode;
 

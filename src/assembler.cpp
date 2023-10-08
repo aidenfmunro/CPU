@@ -9,14 +9,12 @@ byte* Compile(Text* initialText, CPU* spu)
 {
     byte* code = (byte*)calloc(initialText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
 
-
     for (size_t index = 0; index < initialText->numLines; index++)
       {
         char* line        = initialText->lines[index].string;
         size_t lineLength = initialText->lines[index].length;
 
-        char commandCode = 0; // NOTE: 00000000
-        char registerCode = 0; // NOTE: 00000000
+        char commandCode  = 0; // NOTE: 00000000
 
         if (*line == ' ' || *line == ';') // NOTE: skip empty lines and comment lines
             continue;
@@ -31,25 +29,30 @@ byte* Compile(Text* initialText, CPU* spu)
         char command[5] = "";
     
         size_t commandLength = 0;
+        size_t argumentLength = 0;
 
-        sscanf(line, "%s%n %d", command, &commandLength, &value);
+        sscanf(line, "%s%n %lg", command, &commandLength, &value);
 
-        if (value == POISON) // NOTE: either push/pop with register, either math operation 
-          {
-            size_t argumentLength = lineLength - commandLength - 1;
+        // if (value == POISON) // NOTE: either push/pop with register, either math operation 
+          // {
 
-            char argument[argumentLength + 1] = "";
+            char* argument = strtok(line + commandLength, " ");
 
-            sscanf(line + commandLength + 1, "%s%n", argument, &argumentLength);
-
-            printf("%s\n", argument);
+            printf("%s ", command);
+            if (argument != NULL)
+              {
+                argumentLength = strlen(argument);
+                printf("%s ", argument);
+              }
+            printf("%lg\n", value);
+            
 
             if (argumentLength == 3)
               {
                 char registerNum = argument[1] - 'a' + 1; // register number
 
-                commandCode |= (1 << REG_ON);
-                registerCode |= registerNum;
+                commandCode |= ARG_FORMAT_IMMED;
+                commandCode |= ARG_FORMAT_REG;
 
                 *(code + 2 * index * SHIFT + 1) = registerNum;   
               }
@@ -61,21 +64,20 @@ byte* Compile(Text* initialText, CPU* spu)
 
                 sscanf(tempPtr, "%lg", &value);
 
-                commandCode |= (1 << REG_ON); // code | REG_ON;
-                commandCode |= (1 << IMMED_ON);
-                registerCode |= registerNum;
+                commandCode |= ARG_FORMAT_REG; // code | REG_ON;
+                commandCode |= ARG_FORMAT_IMMED;
                 
                 *(code + 2 * index * SHIFT + 1) = registerNum;
                 *(elem_t*)(code + 2 * index + SHIFT) = value;
               }
-          }       
-        else 
-          {
+            else
+              {
             *(elem_t*)(code + 2 * index * SHIFT + SHIFT) = value;
-          }
-
+              }
+        
         commandCode |= getCommandCode(command, commandLength);
-        *(code + 2 * index * SHIFT) = commandCode;           
+        *(code + 2 * index * SHIFT) = commandCode;    
+             
       }
 
     return code;
