@@ -4,7 +4,7 @@ sub
 push 10
 push rax
 pop rax
-push 10
+push 100
 mul
 sub
 push 10

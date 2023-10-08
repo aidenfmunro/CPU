@@ -7,12 +7,12 @@
 
 byte* Compile(Text* initialText, CPU* spu)
 {
-    byte* code = (byte*)calloc(initialText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
+    byte* bytecode = (byte*)calloc(initialText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
 
-    for (size_t index = 0; index < initialText->numLines; index++)
+    for (size_t position = 0; position < initialText->numLines; position++)
       {
-        char* line        = initialText->lines[index].string;
-        size_t lineLength = initialText->lines[index].length;
+        char* line        = initialText->lines[position].string;
+        size_t lineLength = initialText->lines[position].length;
 
         char commandCode  = 0; // NOTE: 00000000
 
@@ -21,7 +21,7 @@ byte* Compile(Text* initialText, CPU* spu)
 
         elem_t value = POISON;
 
-        char* commentPtr = strchr(initialText->lines[index].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
+        char* commentPtr = strchr(initialText->lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
         if (commentPtr != NULL)
             *commentPtr = '\0';
@@ -33,57 +33,82 @@ byte* Compile(Text* initialText, CPU* spu)
 
         sscanf(line, "%s%n %lg", command, &commandLength, &value);
 
-        // if (value == POISON) // NOTE: either push/pop with register, either math operation 
-          // {
+        char* argument = strtok(line + commandLength, " ");
 
-            char* argument = strtok(line + commandLength, " ");
+        printf("%s ", command);
+        if (argument != NULL)
+          {
+            argumentLength = strlen(argument);
+            printf("%s ", argument);
+          }
 
-            printf("%s ", command);
-            if (argument != NULL)
-              {
-                argumentLength = strlen(argument);
-                printf("%s ", argument);
-              }
-            printf("%lg\n", value);
+        printf("%lg\n", value);
+        
+        if (argumentLength == 3 && value == POISON)
+          {
+            commandCode |= ARG_FORMAT_REG;
+
+            *(bytecode + 2 * position * SHIFT + 1) = getRegisterNum(argument[1]);   
+          }
+        else if(argumentLength > 3)
+          {                
+            char* tempPtr = strchr(line, '+') + 1;
+
+            sscanf(tempPtr, "%lg", &value);
+
+            commandCode |= ARG_FORMAT_REG; // code | REG_ON;
+            commandCode |= ARG_FORMAT_IMMED;
             
-
-            if (argumentLength == 3)
-              {
-                char registerNum = argument[1] - 'a' + 1; // register number
-
-                commandCode |= ARG_FORMAT_IMMED;
-                commandCode |= ARG_FORMAT_REG;
-
-                *(code + 2 * index * SHIFT + 1) = registerNum;   
-              }
-            else if(argumentLength > 3)
-              {
-                char registerNum = argument[1] - 'a' + 1; // register number
-                
-                char* tempPtr = strchr(line, '+') + 1;
-
-                sscanf(tempPtr, "%lg", &value);
-
-                commandCode |= ARG_FORMAT_REG; // code | REG_ON;
-                commandCode |= ARG_FORMAT_IMMED;
-                
-                *(code + 2 * index * SHIFT + 1) = registerNum;
-                *(elem_t*)(code + 2 * index + SHIFT) = value;
-              }
-            else
-              {
-            *(elem_t*)(code + 2 * index * SHIFT + SHIFT) = value;
-              }
+            *(bytecode + 2 * position * SHIFT + 1) = getRegisterNum(argument[1]);
+            *(elem_t*)(bytecode + 2 * position + SHIFT) = value;
+          }
+        
+          
+        *writeValue(position, bytecode) = value;
+          
         
         commandCode |= getCommandCode(command, commandLength);
-        *(code + 2 * index * SHIFT) = commandCode;    
+        *(bytecode + 2 * position * SHIFT) |= commandCode;    
+    
              
       }
 
-    return code;
+    return bytecode;
 }
 
-CommandCode getCommandCode(char* command, const size_t commandLength)
+
+elem_t* writeValue(const size_t position, const byte* bytecode)
+{
+    return (elem_t*)(bytecode + (2 * position + 1) * SHIFT);
+}
+
+RegNum getRegisterNum(const char argument)
+{
+    switch(argument)
+      {
+        case 'a':
+          return 1;
+          break;
+
+        case 'b':
+          return 2;
+          break;
+
+        case 'c':
+          return 3;
+          break;
+
+        case 'd':
+          return 4;
+          break;
+
+        default:
+          return 0;
+          break;
+      }
+}
+
+CommandCode getCommandCode(const char* command, const size_t commandLength)
 {
     if (strncmp(command, "push", commandLength) == 0)
       {

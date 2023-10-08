@@ -13,7 +13,13 @@ const char ARG_FORMAT_IMMED = (1 << 4);
 
 typedef int CommandCode;
 
-CommandCode getCommandCode(char* command, const size_t commandLength);
+typedef char RegNum;
+
+RegNum getRegisterNum(const char argument);
+
+CommandCode getCommandCode(const char* command, const size_t commandLength);
+
+elem_t* writeValue(const size_t index, const byte* bytecode);
 
 void printbytecode(Text* text, CPU* spu);
 
