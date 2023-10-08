@@ -5,14 +5,14 @@
 #include "textfuncs.h"
 
 
-byte* Compile(Text* initialText, CPU* spu)
+byte* Compile(Text* assemblyText)
 {
-    byte* bytecode = (byte*)calloc(initialText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
+    byte* bytecode = (byte*)calloc(assemblyText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
 
-    for (size_t position = 0; position < initialText->numLines; position++)
+    for (size_t position = 0; position < assemblyText->numLines; position++)
       {
-        char* line        = initialText->lines[position].string;
-        size_t lineLength = initialText->lines[position].length;
+        char* line        = assemblyText->lines[position].string;
+        size_t lineLength = assemblyText->lines[position].length;
 
         char commandCode  = 0; // NOTE: 00000000
 
@@ -21,7 +21,7 @@ byte* Compile(Text* initialText, CPU* spu)
 
         elem_t value = POISON;
 
-        char* commentPtr = strchr(initialText->lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
+        char* commentPtr = strchr(assemblyText->lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
         if (commentPtr != NULL)
             *commentPtr = '\0';
@@ -41,46 +41,64 @@ byte* Compile(Text* initialText, CPU* spu)
             argumentLength = strlen(argument);
             printf("%s ", argument);
           }
+        printf("%lg \n", value);
 
-        printf("%lg\n", value);
-        
-        if (argumentLength == 3 && value == POISON)
+        if (argumentLength == 3 && isnan(value))
           {
             commandCode |= ARG_FORMAT_REG;
-
-            *(bytecode + 2 * position * SHIFT + 1) = getRegisterNum(argument[1]);   
+            writeRegisterNum(position, bytecode, getRegisterNum(argument[1]));
           }
-        else if(argumentLength > 3)
-          {                
-            char* tempPtr = strchr(line, '+') + 1;
+        else if (argumentLength != 0)
+          {
+            char* tempPtr = strchr(line, '+');
 
-            sscanf(tempPtr, "%lg", &value);
+            if (tempPtr != NULL)
+              {
+                sscanf(tempPtr, "%lg", &value);
+                commandCode |= ARG_FORMAT_REG;
 
-            commandCode |= ARG_FORMAT_REG; // code | REG_ON;
-            commandCode |= ARG_FORMAT_IMMED;
+                writeRegisterNum(position, bytecode, getRegisterNum(argument[1]));
+              }
             
-            *(bytecode + 2 * position * SHIFT + 1) = getRegisterNum(argument[1]);
-            *(elem_t*)(bytecode + 2 * position + SHIFT) = value;
+            commandCode |= ARG_FORMAT_IMMED;
           }
-        
-          
-        *writeValue(position, bytecode) = value;
-          
-        
+        else
+          {
+            perror("syntax error in line: %d\n");
+          }
+
         commandCode |= getCommandCode(command, commandLength);
-        *(bytecode + 2 * position * SHIFT) |= commandCode;    
-    
-             
+
+        writeCommandArgs(position, bytecode, commandCode);
+        writeValue(position, bytecode, value);   
       }
+    
+    FILE* codebin = fopen("code.bin", "wb");
+
+    fwrite (bytecode, sizeof(byte), assemblyText->numLines * 2 * sizeof(elem_t), codebin);
+
+    fclose(codebin);
 
     return bytecode;
 }
 
 
-elem_t* writeValue(const size_t position, const byte* bytecode)
+
+void writeValue(const size_t position, const byte* bytecode, const elem_t value)
 {
-    return (elem_t*)(bytecode + (2 * position + 1) * SHIFT);
+    *(elem_t*)(bytecode + (2 * position + 1) * SHIFT) = value;
 }
+
+void writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum)
+{
+    *(byte*)(bytecode + 2 * position * SHIFT + 1) = registerNum;
+}
+
+void writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode)
+{
+    *(byte*)(bytecode + 2 * position * SHIFT) |= commandCode;
+}
+
 
 RegNum getRegisterNum(const char argument)
 {
@@ -103,7 +121,7 @@ RegNum getRegisterNum(const char argument)
           break;
 
         default:
-          return 0;
+          perror("unknown register\n");
           break;
       }
 }
@@ -149,6 +167,10 @@ CommandCode getCommandCode(const char* command, const size_t commandLength)
     else if (strncmp(command, "hlt", commandLength) == 0)
       {
         return HLT;
+      }
+    else
+      {
+        perror("unknown command\n");
       }  
 }
 

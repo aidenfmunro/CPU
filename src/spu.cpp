@@ -17,7 +17,6 @@ void Proccess(void)
     CreateStack(stack);
 
     CreateText(&text, filename, NONE);
-a
 }
 
 void followInstructions(Stack* stack, Text* text)

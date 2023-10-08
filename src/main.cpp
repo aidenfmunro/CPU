@@ -10,7 +10,7 @@ int main(void)
 
     CreateText(&text, "comms.txt", NONE);
 
-    cpu.code = Compile(&text, &cpu);
+    cpu.code = Compile(&text);
 
     printbytecode(&text, &cpu);
 

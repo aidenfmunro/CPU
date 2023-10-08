@@ -3,7 +3,7 @@
 
 #include "spuconfig.h"
 
-byte* Compile(Text* initialText, CPU* spu);
+byte* Compile(Text* initialText);
 
 const int SHIFT = 8;
 
@@ -19,7 +19,11 @@ RegNum getRegisterNum(const char argument);
 
 CommandCode getCommandCode(const char* command, const size_t commandLength);
 
-elem_t* writeValue(const size_t index, const byte* bytecode);
+void writeValue(const size_t index, const byte* bytecode, const elem_t value);
+
+void writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum);
+
+void writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode);
 
 void printbytecode(Text* text, CPU* spu);
 
