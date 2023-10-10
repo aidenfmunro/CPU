@@ -1,10 +1,14 @@
-push 7
-push 10
-push   100 ; lets go
+push            7
+push            10
+push            10
+pop             rax
+push   100 ; 100 rubley u menya v karmane 
 mul
 sub
 push 10
 add
-push 20
+push 30
+add
+push rax
 add
 hlt

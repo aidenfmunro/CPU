@@ -36,7 +36,7 @@ struct SPU
 
 void followInstructions(Stack* stack, Text* text);
 
-ErrorCode RunProgram(const char* filename, SPU* spu);
+ErrorCode RunProgram(const char* filename);
 
 ErrorCode execCommand(SPU* spu, const int position);
 

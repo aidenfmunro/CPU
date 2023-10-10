@@ -4,15 +4,18 @@
 #include "assembler.h"
 #include "textfuncs.h"
 
-
-byte* Compile(Text* assemblyText)
+ErrorCode Compile(const char* filename)
 {
-    byte* bytecode = (byte*)calloc(assemblyText->numLines, sizeof(elem_t) * 2); // NOTE: command | argument
+    Text assemblyText = {};
 
-    for (size_t position = 0; position < assemblyText->numLines; position++)
+    CreateText(&assemblyText, filename, NONE);
+
+    byte* bytecode = (byte*)calloc(assemblyText.numLines, sizeof(elem_t) * 2); // NOTE: command | argument
+
+    for (size_t position = 0; position < assemblyText.numLines; position++)
       {
-        char* line        = assemblyText->lines[position].string;
-        size_t lineLength = assemblyText->lines[position].length;
+        char* line        = assemblyText.lines[position].string;
+        size_t lineLength = assemblyText.lines[position].length;
 
         char commandCode  = 0; // NOTE: 00000000
 
@@ -21,7 +24,7 @@ byte* Compile(Text* assemblyText)
 
         elem_t value = POISON;
 
-        char* commentPtr = strchr(assemblyText->lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
+        char* commentPtr = strchr(assemblyText.lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
         if (commentPtr != NULL)
             *commentPtr = '\0';
@@ -71,11 +74,15 @@ byte* Compile(Text* assemblyText)
     
     FILE* codebin = fopen("code.bin", "wb");
 
-    fwrite(bytecode, sizeof(byte), assemblyText->numLines * 2 * sizeof(elem_t), codebin);
+    fwrite(bytecode, sizeof(byte), assemblyText.numLines * 2 * sizeof(elem_t), codebin);
 
     fclose(codebin);
 
-    return bytecode;
+    DestroyText(&assemblyText);
+
+    free(bytecode);
+
+    return 0;
 }
 
 

@@ -3,7 +3,7 @@
 
 #include "spuconfig.h"
 
-byte* Compile(Text* initialText);
+ErrorCode Compile(const char* filename);
 
 const int SHIFT = 8;
 

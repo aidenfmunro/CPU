@@ -6,21 +6,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void Proccess(void)
+ErrorCode Proccess(void)
 {
     const char* filename = "comms.txt";
 
-    Stack stack = {};
-
     Text text = {};
-
-    CreateStack(stack);
 
     CreateText(&text, filename, NONE);
 }
 
-ErrorCode RunProgram(const char* filename, SPU* spu)
+ErrorCode RunProgram(const char* filename)
 {
+  SPU spu = {};
+
   FILE* codebin = fopen("code.bin", "rb");
 
   if (codebin == NULL)
@@ -28,17 +26,17 @@ ErrorCode RunProgram(const char* filename, SPU* spu)
   
   size_t fileSize = getSize(filename);
   
-  spu->code = (byte*)calloc(sizeof(byte), fileSize);
+  spu.code = (byte*)calloc(sizeof(byte), fileSize);
 
   Stack stack = {};
 
   CreateStack(stack);
 
-  spu->stack = &stack;
+  spu.stack = &stack;
 
   // fprintf(stderr, "%d\n", fileSize);
 
-  fread(spu->code, sizeof(byte), fileSize, codebin);
+  fread(spu.code, sizeof(byte), fileSize, codebin);
 
   // printf("%d\n", sizeof(spu->code));
 
@@ -50,8 +48,8 @@ ErrorCode RunProgram(const char* filename, SPU* spu)
 
   for (size_t index = 0; index < (getSize(filename) / sizeof(elem_t)) / 2; index++)
     {
-      execCommand(spu, index);
-      PrintStack(spu->stack);
+      execCommand(&spu, index);
+      PrintStack(spu.stack);
     }
   
   return 0;
@@ -144,5 +142,6 @@ ErrorCode execCommand(SPU* spu, const int position)
           break;
       }
 
+  return 0;
 }
 

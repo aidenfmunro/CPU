@@ -4,14 +4,8 @@
 
 int main(void)
 {
-    SPU spu = {};
+    Compile("comms.txt");
 
-    Text text = {};
-
-    CreateText(&text, "comms.txt", NONE);
-
-    Compile(&text);
-
-    RunProgram("code.bin", &spu);
+    RunProgram("code.bin");
 
 }
