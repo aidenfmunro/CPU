@@ -6,15 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-ErrorCode Proccess(void)
-{
-    const char* filename = "comms.txt";
-
-    Text text = {};
-
-    CreateText(&text, filename, NONE);
-}
-
 ErrorCode RunProgram(const char* filename)
 {
   SPU spu = {};
@@ -34,15 +25,7 @@ ErrorCode RunProgram(const char* filename)
 
   spu.stack = &stack;
 
-  // fprintf(stderr, "%d\n", fileSize);
-
   fread(spu.code, sizeof(byte), fileSize, codebin);
-
-  // printf("%d\n", sizeof(spu->code));
-
-  // printf("%d\n", getSize(filename));
-
-  // printf("%d\n", getSize(filename) / (2 * sizeof(elem_t)));
 
   fclose(codebin);
 
@@ -51,23 +34,41 @@ ErrorCode RunProgram(const char* filename)
       execCommand(&spu, index);
       PrintStack(spu.stack);
     }
+
+  DestroyStack(&stack);  
   
   return 0;
 }
 
+elem_t getValue(const size_t position, const byte* bytecode)
+{
+    return *(elem_t*)(bytecode + (2 * position + 1) * SHIFT);
+}
+
+byte getRegisterNum(const size_t position, const byte* bytecode)
+{
+    return *(byte*)(bytecode + 2 * position * SHIFT + 1);
+}
+
+byte getCommandArgs(const size_t position, const byte* bytecode)
+{
+    return *(byte*)(bytecode + 2 * position * SHIFT);
+}
 
 ErrorCode execCommand(SPU* spu, const int position)
 {
-    char instruction = *(spu->code + 2 * position * SHIFT);
+    char instruction = getCommandArgs(position, spu->code);
+
+    char registerNum = getRegisterNum(position, spu->code);
+
+    elem_t value = getValue(position, spu->code);
+
     char argReg = ARG_FORMAT_REG & instruction;
     char argIm = ARG_FORMAT_IMMED & instruction;
-
     int commandCode = instruction & 0x0F;
-    elem_t value = *(elem_t*)(spu->code + (2 * position + 1) * SHIFT);
-    char registerNum = *(spu->code + position * SHIFT + 1);
 
-    printf("command code = %d", commandCode);
-    printf("value = %lg", value);
+    printf("command code = %d; ", commandCode);
+    printf("value = %lg\n", value);
 
     elem_t a = POISON;
     elem_t b = POISON;
@@ -133,7 +134,7 @@ ErrorCode execCommand(SPU* spu, const int position)
           break;
         
         case HLT:
-          printf("%lg", Pop(spu->stack));
+          printf("%lg\n", Pop(spu->stack));
 
           break;
         
@@ -144,4 +145,3 @@ ErrorCode execCommand(SPU* spu, const int position)
 
   return 0;
 }
-

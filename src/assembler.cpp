@@ -85,8 +85,6 @@ ErrorCode Compile(const char* filename)
     return 0;
 }
 
-
-
 void writeValue(const size_t position, const byte* bytecode, const elem_t value)
 {
     *(elem_t*)(bytecode + (2 * position + 1) * SHIFT) = value;
