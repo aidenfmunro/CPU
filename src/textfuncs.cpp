@@ -91,7 +91,7 @@ size_t getSize(const char* filename)
     struct stat stats = {};
     stat(filename, &stats);
 
-    return stats.st_size / sizeof(char);
+    return stats.st_size;
 }
 
 size_t countLines(const Text* text)

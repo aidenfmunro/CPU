@@ -25,7 +25,7 @@ enum Instruction
     HLT  = 12
 };
 
-struct CPU
+struct SPU
 {
     Stack* stack;
 
@@ -36,6 +36,10 @@ struct CPU
 
 void followInstructions(Stack* stack, Text* text);
 
-void Proccess(void);
+ErrorCode RunProgram(const char* filename, SPU* spu);
+
+ErrorCode execCommand(SPU* spu, const int position);
+
+ErrorCode Proccess(void);
 
 #endif

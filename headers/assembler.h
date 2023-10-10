@@ -25,6 +25,6 @@ void writeRegisterNum(const size_t position, const byte* bytecode, const char re
 
 void writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode);
 
-void printbytecode(Text* text, CPU* spu);
+void printbytecode(Text* text, SPU* spu);
 
 #endif

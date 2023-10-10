@@ -4,14 +4,14 @@
 
 int main(void)
 {
-    CPU cpu = {};
+    SPU spu = {};
 
     Text text = {};
 
     CreateText(&text, "comms.txt", NONE);
 
-    cpu.code = Compile(&text);
+    Compile(&text);
 
-    printbytecode(&text, &cpu);
+    RunProgram("code.bin", &spu);
 
 }

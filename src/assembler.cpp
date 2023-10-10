@@ -62,10 +62,6 @@ byte* Compile(Text* assemblyText)
             
             commandCode |= ARG_FORMAT_IMMED;
           }
-        else
-          {
-            perror("syntax error in line: %d\n");
-          }
 
         commandCode |= getCommandCode(command, commandLength);
 
@@ -75,7 +71,7 @@ byte* Compile(Text* assemblyText)
     
     FILE* codebin = fopen("code.bin", "wb");
 
-    fwrite (bytecode, sizeof(byte), assemblyText->numLines * 2 * sizeof(elem_t), codebin);
+    fwrite(bytecode, sizeof(byte), assemblyText->numLines * 2 * sizeof(elem_t), codebin);
 
     fclose(codebin);
 
@@ -174,7 +170,7 @@ CommandCode getCommandCode(const char* command, const size_t commandLength)
       }  
 }
 
-void printbytecode(Text* text, CPU* spu)
+void printbytecode(Text* text, SPU* spu)
 {
     for(size_t i = 0; i < text->numLines; i++)
       {

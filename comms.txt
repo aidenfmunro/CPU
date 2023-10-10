@@ -1,15 +1,10 @@
-push rbx+5 ; wtf wft
 push 7
-sub
 push 10
-push rax
-pop rax
 push   100 ; lets go
-push           rdx
 mul
 sub
 push 10
 add
-push    20
+push 20
 add
 hlt
