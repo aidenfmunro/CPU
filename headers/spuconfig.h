@@ -8,6 +8,8 @@ typedef char byte;
 
 const int nREGS = 4;
 
+const int EXIT_CODE = -1;
+
 enum Instruction
 {
 

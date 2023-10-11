@@ -19,11 +19,11 @@ RegNum getRegisterNum(const char argument);
 
 CommandCode getCommandCode(const char* command, const size_t commandLength);
 
-void writeValue(const size_t index, const byte* bytecode, const elem_t value);
+ErrorCode writeValue(const size_t index, const byte* bytecode, const elem_t value);
 
-void writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum);
+ErrorCode writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum);
 
-void writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode);
+ErrorCode writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode);
 
 void printbytecode(Text* text, SPU* spu);
 

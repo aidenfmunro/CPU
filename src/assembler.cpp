@@ -3,6 +3,7 @@
 #include <math.h>
 #include "assembler.h"
 #include "textfuncs.h"
+#include "utils.h"
 
 ErrorCode Compile(const char* filename)
 {
@@ -12,24 +13,26 @@ ErrorCode Compile(const char* filename)
 
     byte* bytecode = (byte*)calloc(assemblyText.numLines, sizeof(elem_t) * 2); // NOTE: command | argument
 
+    CheckPointerValidation(bytecode);
+
     for (size_t position = 0; position < assemblyText.numLines; position++)
       {
         char* line        = assemblyText.lines[position].string;
         size_t lineLength = assemblyText.lines[position].length;
 
         char commandCode  = 0; // NOTE: 00000000
+        elem_t value = POISON;
+        char command[5] = "";
 
         if (*line == ' ' || *line == ';') // NOTE: skip empty lines and comment lines
             continue;
 
-        elem_t value = POISON;
 
         char* commentPtr = strchr(assemblyText.lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
         if (commentPtr != NULL)
             *commentPtr = '\0';
 
-        char command[5] = "";
     
         size_t commandLength = 0;
         size_t argumentLength = 0;
@@ -39,11 +42,13 @@ ErrorCode Compile(const char* filename)
         char* argument = strtok(line + commandLength, " ");
 
         printf("%s ", command);
+
         if (argument != NULL)
           {
             argumentLength = strlen(argument);
             printf("%s ", argument);
           }
+
         printf("%lg \n", value);
 
         if (argumentLength == 3 && isnan(value))
@@ -85,44 +90,60 @@ ErrorCode Compile(const char* filename)
     return 0;
 }
 
-void writeValue(const size_t position, const byte* bytecode, const elem_t value)
+ErrorCode writeValue(const size_t position, const byte* bytecode, const elem_t value)
 {
+    CheckPointerValidation(bytecode);
+
     *(elem_t*)(bytecode + (2 * position + 1) * SHIFT) = value;
+
+    return OK;
 }
 
-void writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum)
+ErrorCode writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum)
 {
+    CheckPointerValidation(bytecode);
+
     *(byte*)(bytecode + 2 * position * SHIFT + 1) = registerNum;
+
+    return OK;
 }
 
-void writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode)
+ErrorCode writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode)
 {
-    *(byte*)(bytecode + 2 * position * SHIFT) |= commandCode;
-}
+    CheckPointerValidation(bytecode);
 
+    *(byte*)(bytecode + 2 * position * SHIFT) |= commandCode;
+
+    return OK;
+}
 
 RegNum getRegisterNum(const char argument)
 {
     switch(argument)
       {
         case 'a':
+
           return 1;
           break;
 
         case 'b':
+
           return 2;
           break;
 
         case 'c':
+
           return 3;
           break;
 
         case 'd':
+
           return 4;
           break;
 
         default:
-          perror("unknown register\n");
+
+          return NON_EXIST_REGISTER;
           break;
       }
 }
@@ -137,7 +158,7 @@ CommandCode getCommandCode(const char* command, const size_t commandLength)
       {
         return POP;
       }
-    else if (strncmp(command, "add", commandLength) == 0) // TODO: instead of 3 -> COMMAND_LEN
+    else if (strncmp(command, "add", commandLength) == 0)
       {
         return ADD;                    
       }
@@ -171,7 +192,7 @@ CommandCode getCommandCode(const char* command, const size_t commandLength)
       }
     else
       {
-        perror("unknown command\n");
+        return UNKNOWN_ASM_COMMAND;
       }  
 }
 

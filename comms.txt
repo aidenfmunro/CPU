@@ -1,7 +1,7 @@
 push            7
 push            10
 push            10
-pop             rax+5
+pop             rax+100
 push   100 ; 100 rubley u menya v karmane 
 mul
 sub
@@ -12,3 +12,5 @@ add
 push rax
 add
 hlt
+push 8
+push 9

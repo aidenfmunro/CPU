@@ -3,13 +3,15 @@
 #include <time.h>
 #include "stackfuncs.h"
 
-void createStack(Stack* stack ON_DEBUG(, char* name))
+ErrorCode createStack(Stack* stack ON_DEBUG(, char* name))
 {  
     ON_DEBUG(stack->leftCanary  = LEFT_STRUCT_CANARY);
     ON_DEBUG(stack->name        = name);
              stack->size        = 0;
-             stack->capacity    = DEFAULT_CAPACITY; // TODO: not in bytes -> DONE
-             stack->data        = initData();
+             stack->capacity    = DEFAULT_CAPACITY; 
+             stack->data        = (elem_t*)calloc(1 ON_DEBUG(+ 2), sizeof(canary_t));
+             if (stack->data == NULL)
+                 return NO_MEMORY;
     ON_DEBUG(stack->hash        = hashAiden32(stack));
     ON_DEBUG(stack->rightCanary = RIGHT_STRUCT_CANARY); 
     
@@ -17,31 +19,22 @@ void createStack(Stack* stack ON_DEBUG(, char* name))
 
     ON_DEBUG(stack->data = (elem_t*)((char*)stack->data + sizeof(canary_t)));
 
-    ON_DEBUG(placeCanary(stack, stack->capacity, RIGHT_DATA_CANARY)); // TODO: for all types -> DONE
+    ON_DEBUG(placeCanary(stack, stack->capacity, RIGHT_DATA_CANARY));
 
     ON_DEBUG(stack->hash = hashAiden32(stack));
 
     ASSERTHARD(stack); 
+
+    return OK;
 }
 
-elem_t* initData(void)
+ErrorCode placeCanary(Stack* stack, size_t place, canary_t canary)
 {
-    elem_t* temp = (elem_t*)calloc(1 ON_DEBUG(+ 2), sizeof(canary_t));
-
-    while (temp == NULL)
-      {
-        temp = (elem_t*)calloc(1 ON_DEBUG(+ 2), sizeof(canary_t));
-        printf("can't allocate memory for stack");
-      }
-
-    return temp;
-}
-
-void placeCanary(Stack* stack, size_t place, canary_t canary)
-{
-    *(canary_t*)((char*)stack->data + place * sizeof(elem_t)) = canary; // TODO: get canary pointer function -> DONE
+    *(canary_t*)((char*)stack->data + place * sizeof(elem_t)) = canary;
 
     ON_DEBUG(stack->hash = hashAiden32(stack));
+
+    return OK;
 }
 
 canary_t* getCanaryRightptr(const Stack* stack)
@@ -54,44 +47,50 @@ canary_t* getCanaryLeftPtr(const Stack* stack)
     return (canary_t*)((char*)stack->data - sizeof(canary_t));
 }
 
-void reallocStack(Stack* stack, const int resize)
+ErrorCode reallocStack(Stack* stack)
 {
-    ASSERTHARD(stack);
-
-    if (resize == EXPAND)
-      {
-        stack->capacity *= 2;
-      }
-    else if (resize == COMPRESS)
-      {
-        stack->capacity /= 2;
-      }
-
     elem_t* temp = (elem_t*)realloc((char*)stack->data ON_DEBUG(- sizeof(canary_t)),  \
-    ((stack->capacity) * sizeof(elem_t) ON_DEBUG(+ sizeof(canary_t) * 2))); // TODO: get rid elem_t* -> DONE
+    ((stack->capacity) * sizeof(elem_t) ON_DEBUG(+ sizeof(canary_t) * 2))); 
 
-    ASSERTSOFT(temp, NULLPTR); 
+    if (temp == NULL)
+        return NO_MEMORY; 
 
     stack->data = temp;
-    stack->data = (elem_t*)((char*)stack->data ON_DEBUG(+ sizeof(canary_t))); //TODO: changed func -> DONE
+    stack->data = (elem_t*)((char*)stack->data ON_DEBUG(+ sizeof(canary_t))); 
 
     ON_DEBUG(placeCanary(stack, stack->capacity, RIGHT_DATA_CANARY));
 
+    ASSERTHARD(stack);
+
     ON_DEBUG(stack->hash = hashAiden32(stack));
 
-    poisonFill(stack); // TODO: call only with realloc -> DONE
+    ASSERTHARD(stack);
+
+    return OK;
 }
 
-void Push(Stack* stack, elem_t value)
+ErrorCode Push(Stack* stack, elem_t value)
 {
     ASSERTHARD(stack);
     
     if (stack->capacity <= stack->size + 1)
-        reallocStack(stack, EXPAND); // TODO: call realloc when needed -> DONE
+      {
+        stack->capacity *= 2;
+
+        ON_DEBUG(stack->hash = hashAiden32(stack));
+
+        reallocStack(stack);
+
+        poisonFill(stack);
+      }
 
     stack->data[stack->size++] = value;
 
-    ON_DEBUG(stack->hash = hashAiden32(stack));    
+    ON_DEBUG(stack->hash = hashAiden32(stack));
+
+    ASSERTHARD(stack);
+
+    return OK;    
 }
 
 elem_t Pop(Stack* stack)
@@ -99,7 +98,13 @@ elem_t Pop(Stack* stack)
     ASSERTHARD(stack);
 
     if (stack->capacity >= 2 * (stack->size + 1))
-        reallocStack(stack, COMPRESS);
+      {
+        stack->capacity /= 2;
+
+        ON_DEBUG(stack->hash = hashAiden32(stack));
+
+        reallocStack(stack);
+      }
 
     elem_t peek = stack->data[stack->size - 1];
 
@@ -107,10 +112,12 @@ elem_t Pop(Stack* stack)
 
     ON_DEBUG(stack->hash = hashAiden32(stack));
 
+    ASSERTHARD(stack);
+
     return peek;
 }
 
-void poisonFill(Stack* stack)
+ErrorCode poisonFill(Stack* stack)
 {
     ASSERTHARD(stack);
     
@@ -120,32 +127,39 @@ void poisonFill(Stack* stack)
     ON_DEBUG(stack->hash = hashAiden32(stack));
 
     ASSERTHARD(stack);
+
+    return OK;
 }
 
-void DestroyStack(Stack* stack)
+ErrorCode DestroyStack(Stack* stack)
 {
     if (stack->data == NULL)
+      {
         printf("stack is already deleted!\n");
+        return STACK_DELETED;
+      }
     else
       {
         stack->size = 0;
 
         ON_DEBUG(stack->hash = hashAiden32(stack));
 
-        poisonFill(stack);  // TODO: fill poison because stays in memory -> DONE
+        poisonFill(stack);
 
         stack->capacity = 0;
 
-        free((elem_t*)((char*)stack->data ON_DEBUG(- sizeof(canary_t)))); // TODO: DestroyStack more than once, program does not fall -> DONE
+        free((elem_t*)((char*)stack->data ON_DEBUG(- sizeof(canary_t))));
 
         stack->data = NULL;
 
         ON_DEBUG(stack->hash = 0);
         ON_DEBUG(stack->name = "NONE");
       }
+    
+    return OK;
 }
 
-void PrintStack(const Stack* stack)
+ErrorCode PrintStack(const Stack* stack)
 {
     ON_DEBUG(printf("\tleft data canary = %llx\n", *getCanaryLeftPtr(stack)));
 
@@ -156,14 +170,16 @@ void PrintStack(const Stack* stack)
         printf("\t\t   [%d] %" FORMAT "\n", i, stack->data[i]);
     
     ON_DEBUG(printf("\tright data canary = %llx\n", *getCanaryRightptr(stack)));
+
+    return OK;
 }
 
-const char* stackStrError (const int code) //TODO: think about its
+const char* stackStrError (const int code) 
 {
     #define CODE_(code) case code: return #code;
 
     switch (code)
-        {                                       //TODO: change code name???
+        {                                       
         CODE_ (NULLPTR_STACK)
         CODE_ (NULLPTR_DATA)
         CODE_ (SIZE_BIGGER_CAPACITY)
@@ -182,11 +198,14 @@ const char* stackStrError (const int code) //TODO: think about its
     #undef CODE_    
 }
 
-void stackDump(const Stack* stack, const char* filename, const int lineNum, const char* functionName)
+ErrorCode stackDump(const Stack* stack, const char* filename, const int lineNum, const char* functionName)
 {
-    FILE* fp = fopen(logfilename, "w+"); // TODO: user config filename -> DONE
+    FILE* fp = fopen(logfilename, "w+");
 
-    LOG(fp, "This log file was made at: %s\n", getTime()); // TODO: LOG("line: %d", 7); make it look simple -> DONE
+    if (fp == NULL)
+        return UNABLE_TO_OPEN_FILE;
+
+    LOG(fp, "This log file was made at: %s\n", getTime());
 
     int error = stackVerify(stack);
 
@@ -219,6 +238,8 @@ void stackDump(const Stack* stack, const char* filename, const int lineNum, cons
                  LOG(fp, "}\n");
 
     fclose(fp);
+
+    return OK;
 }
 
 const char* getTime(void)
@@ -227,6 +248,12 @@ const char* getTime(void)
     time(&t);
     return ctime(&t);
 }
+
+#define CHECK_ERROR(EXPRESSION, ERROR, errorSum)        \
+    if (EXPRESSION)                                     \
+      {                                                 \
+        errorSum += ERROR;                              \
+      }                
 
 ErrorCode stackVerify(const Stack* stack)
 {
@@ -254,6 +281,8 @@ ErrorCode stackVerify(const Stack* stack)
 
     return error; 
 }
+
+#undef CHECK_ERROR
 
 unsigned int hashAiden32(const Stack* stack)
 {

@@ -5,17 +5,13 @@
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>
-#include "stackconfig.h"
-
-typedef int ErrorCode;
+#include "config.h"
 
 typedef unsigned long long canary_t;
 
 const uint32_t MOD_AIDEN = 64;
 
 const int MAX_STACK_SIZE = 4000 * 8;
-
-const int NULLPTR = 0;
 
 const canary_t LEFT_STRUCT_CANARY  = 0xDEADAAAA;
 const canary_t RIGHT_STRUCT_CANARY = 0xDEADBBBB;
@@ -101,20 +97,13 @@ const canary_t RIGHT_DATA_CANARY   = 0xDEADFFFF;
       }
                 
 
-#define CreateStack(stack)                                \
+#define CreateStack(stack)                              \
     do                                                  \
       {                                                 \
-        createStack(&stack ON_DEBUG(, #stack));           \
+        createStack(&stack ON_DEBUG(, #stack));         \
       } while(0);                                       \
 
-
-enum RESIZE
-{
-    COMPRESS = -1,
-    EXPAND   = 1
-};
-
-enum ERRORS
+enum STACK_ERRORS
 {
     NULLPTR_STACK           = (1 << 0), 
     NULLPTR_DATA            = (1 << 1),
@@ -143,23 +132,23 @@ struct Stack
 
 };
 
-void createStack(Stack* stk ON_DEBUG(, char* name));
+ErrorCode createStack(Stack* stk ON_DEBUG(, char* name));
 
 elem_t* initData(void);
 
-void reallocStack(Stack* stk, const int resize);
+ErrorCode reallocStack(Stack* stk);
 
-void placeCanary(Stack* stk, size_t place, canary_t canary);
+ErrorCode placeCanary(Stack* stk, size_t place, canary_t canary);
 
-void poisonFill(Stack* stk);
+ErrorCode poisonFill(Stack* stk);
 
-void DestroyStack(Stack* stk);
+ErrorCode DestroyStack(Stack* stk);
 
-void Push(Stack* stk, elem_t value);
+ErrorCode Push(Stack* stk, elem_t value);
 
 elem_t Pop(Stack* stk);
 
-void PrintStack(const Stack* stk);
+ErrorCode PrintStack(const Stack* stk);
 
 const char* getTime(void);
 
@@ -167,7 +156,7 @@ const char* stackStrError (const int code);
 
 ErrorCode stackVerify(const Stack* stk);
 
-void stackDump(const Stack* stk, const char* filename, const int lineNum, const char* functionName);
+ErrorCode stackDump(const Stack* stk, const char* filename, const int lineNum, const char* functionName);
 
 canary_t* getCanaryRightptr(const Stack* stack);
 

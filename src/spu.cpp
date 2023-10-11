@@ -1,10 +1,11 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "textfuncs.h"
 #include "stackfuncs.h"
 #include "spuconfig.h"
 #include "assembler.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "utils.h"
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -29,29 +30,44 @@ ErrorCode RunProgram(const char* filename)
 
   fclose(codebin);
 
-  for (size_t index = 0; index < (getSize(filename) / sizeof(elem_t)) / 2; index++)
+  int ret = 0;
+
+  for (size_t index = 0; index < (fileSize / sizeof(elem_t)) / 2; index++)
     {
-      execCommand(&spu, index);
-      PrintStack(spu.stack);
+      if (ret != EXIT_CODE)
+        {
+          ret = execCommand(&spu, index);
+          PrintStack(spu.stack);
+        }
+      else
+        {
+          break;
+        }
     }
 
   DestroyStack(&stack);  
   
-  return 0;
+  return OK;
 }
 
 elem_t getValue(const size_t position, const byte* bytecode)
-{
+{ 
+    CheckPointerValidation(bytecode + (2 * position + 1) * SHIFT);  
+
     return *(elem_t*)(bytecode + (2 * position + 1) * SHIFT);
 }
 
 byte getRegisterNum(const size_t position, const byte* bytecode)
 {
+    CheckPointerValidation(bytecode + 2 * position * SHIFT + 1);
+
     return *(byte*)(bytecode + 2 * position * SHIFT + 1);
 }
 
 byte getCommandArgs(const size_t position, const byte* bytecode)
 {
+    CheckPointerValidation(bytecode + 2 * position * SHIFT);
+
     return *(byte*)(bytecode + 2 * position * SHIFT);
 }
 
@@ -135,13 +151,15 @@ ErrorCode execCommand(SPU* spu, const int position)
         
         case HLT:
           printf("%lg\n", Pop(spu->stack));
+          return EXIT_CODE;
 
           break;
         
         default:
-          printf("wtf");
+          
+          return UNKNOWN_ASM_COMMAND;
           break;
       }
 
-  return 0;
+  return OK;
 }
