@@ -14,11 +14,16 @@ ErrorCode RunProgram(const char* filename)
   FILE* codebin = fopen("code.bin", "rb");
 
   if (codebin == NULL)
-      return 1;
+      return UNABLE_TO_OPEN_FILE;
   
   size_t fileSize = getSize(filename);
   
-  spu.code = (byte*)calloc(sizeof(byte), fileSize);
+  byte* temp = (byte*)calloc(sizeof(byte), fileSize);
+
+  if (temp == NULL)
+      return NO_MEMORY;
+
+  spu.code = temp;
 
   Stack stack = {};
 
