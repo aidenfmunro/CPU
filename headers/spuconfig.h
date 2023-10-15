@@ -10,6 +10,8 @@ const int nREGS = 4;
 
 const int EXIT_CODE = -1;
 
+const int BYTES_PER_COMMAND = 16;
+
 enum Instruction
 {
 
@@ -29,14 +31,16 @@ enum Instruction
 
 struct SPU
 {
-    Stack* stack;
+    Stack stack;
 
     elem_t regs[nREGS];
     
     byte* code;
 };
 
-void followInstructions(Stack* stack, Text* text);
+ErrorCode CreateSPU(SPU* spu, const char* filename);
+
+ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode RunProgram(const char* filename);
 

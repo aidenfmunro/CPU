@@ -30,7 +30,7 @@ ErrorCode Compile(const char* filename)
 
         char* commentPtr = strchr(assemblyText.lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
-        if (commentPtr != NULL)
+        if (commentPtr != NULL) // TODO: seperate to functions
             *commentPtr = '\0';
 
     
@@ -150,7 +150,7 @@ RegNum getRegisterNum(const char argument)
 
 CommandCode getCommandCode(const char* command, const size_t commandLength)
 {
-    if (strncmp(command, "push", commandLength) == 0)
+    if (strncmp(command, "push", commandLength) == 0) // remove command length
       {
         return PUSH;
       }
