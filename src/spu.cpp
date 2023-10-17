@@ -14,25 +14,9 @@ ErrorCode RunProgram(const char* filename)
 
     CreateSPU(&spu, filename);
 
-    int ret = 0;
-
-    for (size_t index = 0; index < getSize(filename) / BYTES_PER_COMMAND; index++) // TODO: specify the meaning? of / ?
+    for (size_t index = 0;; index++) // TODO: specify the meaning? of / ?
       {
-        if (ret != EXIT_CODE)
-          {
-            ret = execCommand(&spu, index); // TODO: universal log system
-            PrintStack(&spu.stack);
-          }
-        else if (ret == UNKNOWN_ASM_COMMAND)
-          {
-            printf("program failed");
-
-            break;
-          }
-        else
-          {
-            break;
-          }
+        if (execCommand(&spu, index) == EXIT_CODE) return OK;
       }
 
     DestroySPU(&spu);  
@@ -42,12 +26,7 @@ ErrorCode RunProgram(const char* filename)
 
 ErrorCode CreateSPU(SPU* spu, const char* filename)
 {
-    FILE* codebin = fopen(filename, "rb");
-
-    myAssert(codebin, UNABLE_TO_OPEN_FILE);
-
-    if (codebin == NULL)
-        return UNABLE_TO_OPEN_FILE; // TODO: обертка над fopen -> какой файл не был открыт, perror: why can be useful?
+    myOpen("code.bin", "rb", codebin); // TODO: обертка над fopen -> какой файл не был открыт, perror: why can be useful?
     
     size_t fileSize = getSize(filename);
     
@@ -62,13 +41,11 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 
     CreateStack(stack);
 
-    printf("%p\n", stack.data);
-
     spu->stack = stack;
 
-    fread(spu->code, sizeof(byte), fileSize, codebin); //TODO: is fread successful?
+    myRead(spu->code, sizeof(byte), fileSize, codebin);
 
-    fclose(codebin);
+    myClose(codebin); //TODO: is fread successful? -> DONE
 
     return OK;
 }
@@ -76,6 +53,7 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 ErrorCode DestroySPU(SPU* spu)
 {
     DestroyStack(&spu->stack);
+
     free(spu->code);
 
     return OK;
@@ -104,92 +82,33 @@ byte getCommandArgs(const size_t position, const byte* bytecode)
 
 ErrorCode execCommand(SPU* spu, const int position)
 {    
-    char instruction = getCommandArgs(position, spu->code); // TODO: if statements for immed and reg optimize
+    char instruction = getCommandArgs(position, spu->code);               // TODO: if statements for immed and reg optimize
 
     char registerNum = getRegisterNum(position, spu->code);
 
-    elem_t value = getValue(position, spu->code);
+    elem_t value     = getValue(position, spu->code);
 
-    char argReg = instruction & ARG_FORMAT_REG;
-    char argIm = instruction & ARG_FORMAT_IMMED; // TODO: change name to isArgReg
-    int commandCode = instruction & 0x0F; // TODO: make const 0x0F
+    bool isArgReg    = instruction & ARG_FORMAT_REG;
+    bool isArgIm     = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
+    int commandCode  = instruction & 0x0F;                                // TODO: make const 0x0F
 
-    printf("command code = %d; ", commandCode);
-    printf("value = %lg\n", value); // TODO: seperate macro for log
+                                                                          // printf("command code = %d; ", commandCode);
+                                                                          // printf("value = %lg\n", value); 
+
+                                                                          // TODO: seperate macro for log
 
     switch (commandCode)
       {
-        case CMD_PUSH:
-          {
-            if (argIm && argReg)
-              {
-                PUSH(spu->regs[registerNum] + value);
-              }
-            else if (argReg)
-              {
-                PUSH(spu->regs[registerNum]);
-              }
-            else
-              {
-                PUSH(value);
-              }
-          }
+        #define DEF_COMMAND(name, number, isArgIm, isArgReg, code) case CMD_ ## name: code; break;                                           
 
-          break;
+        #include "commands.h"
 
-        case CMD_POP:
-          {
-            if (argIm && argReg)
-              {
-                spu->regs[registerNum] = POP + value;
-              }
-            else if (argReg)
-              { 
-                spu->regs[registerNum] = POP;
-              }
-          
-            break;
-          }
-        
-        case CMD_ADD:
-          {
-            PUSH(POP + POP);
-          }
+        #undef DEF_COMMAND
 
-          break;
-
-        case CMD_SUB:
-          {
-            PUSH(0 - POP + POP);
-          }
-
-          break;
-
-        case CMD_DIV:
-          {
-            PUSH(pow(POP / POP, -1));
-          }
-
-          break;
-        
-        case CMD_MUL:
-          {
-            PUSH(POP * POP); 
-          }
-
-          break;
-        
-        case CMD_HLT:
-          printf("%lg\n", Pop(&spu->stack));
-          return EXIT_CODE;
-
-          break;
-        
         default:
-          
-          return UNKNOWN_ASM_COMMAND;
-          break;
+            perror("Unknown command");
+            return EXIT_CODE;
       }
-
+    
   return OK;
 }

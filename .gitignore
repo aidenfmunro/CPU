@@ -1,5 +1,5 @@
 *.vscode
 *.out
-*,txt
+*.txt
 *.bin
 *.o

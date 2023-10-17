@@ -6,10 +6,12 @@ push   100 ; 100 rubley u menya v karmane
 mul
 sub
 push 10
+push 10
 add
 push 30
 add
 push rax
+add
 add
 hlt
 push 8

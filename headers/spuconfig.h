@@ -12,21 +12,15 @@ const int EXIT_CODE = -1;
 
 const int BYTES_PER_COMMAND = 16;
 
-enum Instruction
+enum Command
 {
 
-    CMD_PUSH = 1,
-    CMD_POP  = 2,
-    CMD_IN   = 3,
-    CMD_ADD  = 4,
-    CMD_SUB  = 5,
-    CMD_MUL  = 6,
-    CMD_DIV  = 7,
-    CMD_SQRT = 8,
-    CMD_SIN  = 9,
-    CMD_COS  = 10,
-    CMD_OUT  = 11,
-    CMD_HLT  = 12
+    #define DEF_COMMAND(name, num, ...) \
+        CMD_ ## name = num,
+
+    #include "commands.h"
+
+    #undef DEF_COMMAND
 };
 
 struct SPU
