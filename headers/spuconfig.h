@@ -15,18 +15,18 @@ const int BYTES_PER_COMMAND = 16;
 enum Instruction
 {
 
-    PUSH = 1,
-    POP  = 2,
-    IN   = 3,
-    ADD  = 4,
-    SUB  = 5,
-    MUL  = 6,
-    DIV  = 7,
-    SQRT = 8,
-    SIN  = 9,
-    COS  = 10,
-    OUT  = 11,
-    HLT  = 12
+    CMD_PUSH = 1,
+    CMD_POP  = 2,
+    CMD_IN   = 3,
+    CMD_ADD  = 4,
+    CMD_SUB  = 5,
+    CMD_MUL  = 6,
+    CMD_DIV  = 7,
+    CMD_SQRT = 8,
+    CMD_SIN  = 9,
+    CMD_COS  = 10,
+    CMD_OUT  = 11,
+    CMD_HLT  = 12
 };
 
 struct SPU

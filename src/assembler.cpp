@@ -152,43 +152,43 @@ CommandCode getCommandCode(const char* command, const size_t commandLength)
 {
     if (strncmp(command, "push", commandLength) == 0) // remove command length
       {
-        return PUSH;
+        return CMD_PUSH;
       }
     else if (strncmp(command, "pop", commandLength) == 0)
       {
-        return POP;
+        return CMD_POP;
       }
     else if (strncmp(command, "add", commandLength) == 0)
       {
-        return ADD;                    
+        return CMD_ADD;                    
       }
     else if (strncmp(command, "sub", commandLength) == 0)
       {
-        return SUB;
+        return CMD_SUB;
       }
     else if (strncmp(command, "div", commandLength) == 0)
       {
-        return DIV;
+        return CMD_DIV;
       }
     else if (strncmp(command, "mul", commandLength) == 0)
       {
-        return MUL;
+        return CMD_MUL;
       }
     else if (strncmp(command, "sqrt", commandLength) == 0)
       {
-        return SQRT;
+        return CMD_SQRT;
       }
     else if (strncmp(command, "sin", commandLength) == 0)
       {
-        return SIN;
+        return CMD_SIN;
       }
     else if (strncmp(command, "cos", commandLength) == 0)
       {
-        return COS;
+        return CMD_COS;
       }
     else if (strncmp(command, "hlt", commandLength) == 0)
       {
-        return HLT;
+        return CMD_HLT;
       }
     else
       {

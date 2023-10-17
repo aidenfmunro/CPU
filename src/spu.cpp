@@ -6,6 +6,7 @@
 #include "spuconfig.h"
 #include "assembler.h"
 #include "utils.h"
+#include "dsl.h"
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -19,10 +20,14 @@ ErrorCode RunProgram(const char* filename)
       {
         if (ret != EXIT_CODE)
           {
-            PrintStack(&spu.stack);
-            printf("stack data pointer = %p\n", &spu.stack.data);
             ret = execCommand(&spu, index); // TODO: universal log system
             PrintStack(&spu.stack);
+          }
+        else if (ret == UNKNOWN_ASM_COMMAND)
+          {
+            printf("program failed");
+
+            break;
           }
         else
           {
@@ -111,71 +116,70 @@ ErrorCode execCommand(SPU* spu, const int position)
 
     printf("command code = %d; ", commandCode);
     printf("value = %lg\n", value); // TODO: seperate macro for log
-    printf("stack pointer = %p\n", spu->stack);
-    printf("stack data pointer = %p\n", &spu->stack.data);
-
-    elem_t a = POISON;
-    elem_t b = POISON;
 
     switch (commandCode)
       {
-        case PUSH:
-          if (argIm && argReg)
-            {
-              Push(&spu->stack, spu->regs[registerNum] + value);
-            }
-          else if (argReg)
-            {
-              Push(&spu->stack, spu->regs[registerNum]);
-            }
-          else
-            {
-              Push(&spu->stack, value);
-            }
+        case CMD_PUSH:
+          {
+            if (argIm && argReg)
+              {
+                PUSH(spu->regs[registerNum] + value);
+              }
+            else if (argReg)
+              {
+                PUSH(spu->regs[registerNum]);
+              }
+            else
+              {
+                PUSH(value);
+              }
+          }
 
           break;
 
-        case POP:
-          if (argIm && argReg)
-            {
-              spu->regs[registerNum] = Pop(&spu->stack) + value;
-            }
-          else if (argReg)
-            { 
-              spu->regs[registerNum] = Pop(&spu->stack);
-            }
+        case CMD_POP:
+          {
+            if (argIm && argReg)
+              {
+                spu->regs[registerNum] = POP + value;
+              }
+            else if (argReg)
+              { 
+                spu->regs[registerNum] = POP;
+              }
           
-          break;
+            break;
+          }
         
-        case ADD:
-          b = Pop(&spu->stack);
-          a = Pop(&spu->stack);
-          Push(&spu->stack, a + b);
+        case CMD_ADD:
+          {
+            PUSH(POP + POP);
+          }
 
           break;
 
-        case SUB:
-          b = Pop(&spu->stack);
-          a = Pop(&spu->stack);
-          Push(&spu->stack, b - a);
+        case CMD_SUB:
+          {
+            PUSH(0 - POP + POP);
+          }
 
           break;
 
-        case DIV:
-          b = Pop(&spu->stack); // DSL 
-          a = Pop(&spu->stack);
-          Push(&spu->stack, a / b);
-
-          break;
-        
-        case MUL:
-          b = Pop(&spu->stack);
-          a = Pop(&spu->stack);
-          Push(&spu->stack, a * b);
+        case CMD_DIV:
+          {
+            PUSH(pow(POP / POP, -1));
+          }
 
           break;
         
-        case HLT:
+        case CMD_MUL:
+          {
+            PUSH(POP * POP); 
+          }
+
+          break;
+        
+        case CMD_HLT:
           printf("%lg\n", Pop(&spu->stack));
           return EXIT_CODE;
 

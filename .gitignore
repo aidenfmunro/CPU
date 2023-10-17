@@ -1,5 +1,5 @@
-./vscode
-./out
-./txt
-./bin
-./*.o
+*.vscode
+*.out
+*,txt
+*.bin
+*.o
