@@ -1,11 +1,11 @@
-This log file was made at: Tue Oct 17 16:59:18 2023
+This log file was made at: Fri Oct 20 19:29:08 2023
 
-Stack  [0x7fffffffdb10], ERROR #4 (SIZE_BIGGER_CAPACITY), in file src/stackfuncs.cpp, line 115, function: Pop
+Stack  [0x7ffcaced2740], ERROR #4 (SIZE_BIGGER_CAPACITY), in file src/stackfuncs.cpp, line 115, function: Pop
 {
 	size = 18446744073709551615
 	capacity = 1
 
-	data[0x55555555ccd0]:
+	data[0x55981fd21ea0]:
 
 		   [0] nan
 }

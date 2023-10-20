@@ -28,9 +28,8 @@ DEF_COMMAND(POP, 2, 1,
 
 DEF_COMMAND(IN, 3, 0,  
     {
-      elem_t val = 0;
-      scanf("%lg", &val);
-      PUSH(val);
+      scanf("%lg", &value);
+      PUSH(value);
     })
 
 DEF_COMMAND(ADD, 4, 0,
@@ -75,5 +74,6 @@ DEF_COMMAND(OUT, 11, 0,
 
 DEF_COMMAND(HLT, 12, 0, 
     {
-       return EXIT_CODE; 
+        printf("result: %lg\n", POP); 
+        return EXIT_CODE; 
     })

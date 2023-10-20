@@ -150,46 +150,13 @@ RegNum getRegisterNum(const char argument)
 
 CommandCode getCommandCode(const char* command, const size_t commandLength)
 {
-    if (strncmp(command, "push", commandLength) == 0) // remove command length
-      {
-        return CMD_PUSH;
-      }
-    else if (strncmp(command, "pop", commandLength) == 0)
-      {
-        return CMD_POP;
-      }
-    else if (strncmp(command, "add", commandLength) == 0)
-      {
-        return CMD_ADD;                    
-      }
-    else if (strncmp(command, "sub", commandLength) == 0)
-      {
-        return CMD_SUB;
-      }
-    else if (strncmp(command, "div", commandLength) == 0)
-      {
-        return CMD_DIV;
-      }
-    else if (strncmp(command, "mul", commandLength) == 0)
-      {
-        return CMD_MUL;
-      }
-    else if (strncmp(command, "sqrt", commandLength) == 0)
-      {
-        return CMD_SQRT;
-      }
-    else if (strncmp(command, "sin", commandLength) == 0)
-      {
-        return CMD_SIN;
-      }
-    else if (strncmp(command, "cos", commandLength) == 0)
-      {
-        return CMD_COS;
-      }
-    else if (strncmp(command, "hlt", commandLength) == 0)
-      {
-        return CMD_HLT;
-      }
+    
+    #define DEF_COMMAND(name, num, argc, code) if (strncasecmp(#name, command, commandLength) == 0) {return CMD_ ## name;}
+
+    #include "commands.h"
+
+    #undef DEF_COMMAND
+
     else
       {
         return UNKNOWN_ASM_COMMAND;

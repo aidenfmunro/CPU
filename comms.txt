@@ -1,5 +1,6 @@
         push    10
         push    10
+        in
         push    10
         pop     rax+100
         push    100 ; 100 rubley u menya v karmane 
@@ -8,12 +9,11 @@
         push    10
         push    10
         add
-        push    30
+        push    40
         add
         push    rax
         add
         add
-        out
         hlt
         push    8
         push    9
