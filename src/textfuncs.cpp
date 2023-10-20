@@ -144,12 +144,8 @@ void generalSort(Text* text, size_t sortmode)
 
     case NONE:
         break;
-    
-#define by    
-#define segfault by default
 
-    segfault:
-        *(int*)0 = 0;
+    default:
         break;
     }
 }
@@ -187,21 +183,21 @@ void quickSort(void* array, int start, int end, size_t elemSize, compareFunc_t c
 
 int partition(void* array, int left, int right, size_t elemSize, compareFunc_t compareFunc)
 {
-  myAssert(array, NULLPTR);
+    myAssert(array, NULLPTR);
 
-  int pivot = left;
+    int pivot = left;
 
-  while (left < right)
-    {
-      while (compareFunc(array + left * elemSize, array + pivot * elemSize) < 0 && left < right)
-          left++;
+    while (left < right)
+      {
+        while (compareFunc(array + left * elemSize, array + pivot * elemSize) < 0 && left < right)
+            left++;
 
-      while (compareFunc(array + right * elemSize, array + pivot * elemSize) >= 0 && left < right)
-          right--;
+        while (compareFunc(array + right * elemSize, array + pivot * elemSize) >= 0 && left < right)
+            right--;
 
-      if (left < right)
-          SWAP(array + left * elemSize, array + right * elemSize, elemSize);
-    }
+        if (left < right)
+            SWAP(array + left * elemSize, array + right * elemSize, elemSize);
+      }
     
     SWAP(array + pivot * elemSize, array + right * elemSize, elemSize);
 

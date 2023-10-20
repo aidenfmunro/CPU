@@ -1,19 +1,38 @@
-        push    10
-        push    10
+        ;push    10
+
+        ;push    10
+        ;push    20
+        ;pop     rax+100
+        ;push    100 ; 100 rubley u menya v karmane 
+        ;mul
+        ;sub
+        ;push    10
+        ;push    10
+        ;add
+        ;push    40
+        ;add
+        ;push    rax
+        ;add
+        ;add
+        ;out
+        ;hlt
+        ;push    8
+        ;push    9
         in
-        push    10
-        pop     rax+100
-        push    100 ; 100 rubley u menya v karmane 
+        pop rax
+        in
+
+        pop rbx
+        in
+        pop rcx
+        push rbx
+        push rbx
+        mul
+        push 4
+        push rax
+        push rcx
+        mul
         mul
         sub
-        push    10
-        push    10
-        add
-        push    40
-        add
-        push    rax
-        add
-        add
+        out
         hlt
-        push    8
-        push    9

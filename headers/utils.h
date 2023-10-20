@@ -3,6 +3,8 @@
 
 bool isPointerValid(void *ptr); 
 
+int StringIsEmpty(const Line* line);
+
 #define CheckPointerValidation(pointer)     \
     do                                      \
       {                                     \       
@@ -18,14 +20,21 @@ bool isPointerValid(void *ptr);
           }                                 \
 
 #define myRead(pointer, elemSize, fileSize, fileVar) \
-        size_t num = fread(pointer, elemSize, fileSize, fileVar); \
-        if (num == 0) \
+        if (fread(pointer, elemSize, fileSize, fileVar) == 0) \
           {                           \
             perror("Error");        \
-          }                  
+          }
+
+#define myWrite(pointer, elemSize, fileSize, fileVar) \
+        if (fwrite(pointer, elemSize, fileSize, fileVar) == 0) \
+          {                                                    \
+            perror("Error");                                   \                                    
+          }                 
 
 #define myClose(fileVar) \
         fclose(fileVar);
+
+
 
                     
   

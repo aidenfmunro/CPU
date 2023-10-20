@@ -5,6 +5,21 @@
 #include "textfuncs.h"
 #include "utils.h"
 
+const uint32_t MAX_LABELNAME_LENGTH = 16;
+
+const uint32_t POSITION_SHIFT = 8; 
+
+struct Label
+{
+    size_t address;
+    char name[MAX_LABELNAME_LENGTH];
+};
+
+struct Labels
+{
+    Label* labels;
+};
+
 ErrorCode Compile(const char* filename)
 {
     Text assemblyText = {};
@@ -15,25 +30,24 @@ ErrorCode Compile(const char* filename)
 
     CheckPointerValidation(bytecode);
 
-    for (size_t position = 0; position < assemblyText.numLines; position++)
+    size_t position = 0;
+
+    for (size_t index = 0; index < assemblyText.numLines; index++)
       {
-        char* curLine        = assemblyText.lines[position].string;
-        size_t curLineLength = assemblyText.lines[position].length;
+        char* curLine = assemblyText.lines[index].string;
 
-        char commandCode  = 0; // NOTE: 00000000
-        elem_t value = POISON;
-        char command[5] = "";
-
-        if (*curLine == ';') // NOTE: skip empty lines and comment lines
-            continue;
-
-
-        char* commentPtr = strchr(assemblyText.lines[position].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
+        char* commentPtr = strchr(assemblyText.lines[index].string, int(';')); // NOTE: ignore comments ex.: "; Hello"
 
         if (commentPtr != NULL) // TODO: seperate to functions
             *commentPtr = '\0';
 
-    
+        if(StringIsEmpty(&assemblyText.lines[index]))
+            continue;
+         
+        char commandCode  = 0; // NOTE: 00000000
+        elem_t value = POISON;
+        char command[5] = "";
+
         size_t commandLength = 0;
         size_t argumentLength = 0;
 
@@ -74,20 +88,22 @@ ErrorCode Compile(const char* filename)
         commandCode |= getCommandCode(command, commandLength);
 
         writeCommandArgs(position, bytecode, commandCode);
-        writeValue(position, bytecode, value);   
+        writeValue(position, bytecode, value);
+
+        position += 1;   
       }
     
-    FILE* codebin = fopen("code.bin", "wb");
+    myOpen("code.bin", "wb", codebin);
 
-    fwrite(bytecode, sizeof(byte), assemblyText.numLines * 2 * sizeof(elem_t), codebin);
+    myWrite(bytecode, sizeof(byte), assemblyText.numLines * 2 * sizeof(elem_t), codebin);
 
-    fclose(codebin);
+    myClose(codebin);
 
     DestroyText(&assemblyText);
 
     free(bytecode);
 
-    return 0;
+    return OK;
 }
 
 ErrorCode writeValue(const size_t position, const byte* bytecode, const elem_t value)
@@ -150,7 +166,6 @@ RegNum getRegisterNum(const char argument)
 
 CommandCode getCommandCode(const char* command, const size_t commandLength)
 {
-    
     #define DEF_COMMAND(name, num, argc, code) if (strncasecmp(#name, command, commandLength) == 0) {return CMD_ ## name;}
 
     #include "commands.h"

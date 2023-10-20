@@ -49,7 +49,7 @@ DEF_COMMAND(MUL, 6, 0,
     
 DEF_COMMAND(DIV, 7, 0,
     {
-        PUSH(pow(POP / POP, -1));        
+        PUSH(pow(POP / POP, -1));   // TODO: check for zero      
     })
 
 DEF_COMMAND(SQRT, 8, 0,
@@ -74,6 +74,42 @@ DEF_COMMAND(OUT, 11, 0,
 
 DEF_COMMAND(HLT, 12, 0, 
     {
-        printf("result: %lg\n", POP); 
         return EXIT_CODE; 
     })
+
+/*
+DEF_COMMAND(JMP, 13, 0,
+    {
+      ;
+    })
+
+DEF_COMMAND(JNE, 14, 0,
+    { 
+      ;
+    })
+
+DEF_COMMAND(JE, 15, 0,
+    {
+      ;
+    })
+
+DEF_COMMAND(JBE, 16, 0
+    {
+      ;
+    })
+
+DEF_COMMAND(JB, 17, 0,
+    {
+      ;
+    })
+
+DEF_COMMAND(JAE, 18, 0,
+    {
+      ;
+    })
+
+DEF_COMMAND(JA, 19, 0,
+    {
+      ;
+    })
+*/

@@ -23,9 +23,6 @@ ErrorCode RunProgram(const char* filename)
     for (size_t index = 0;; index++) // TODO: specify the meaning? of / ?
       {
         if (execCommand(&spu, index) == EXIT_CODE) return OK;
-
-        PrintStack(&spu.stack);
-        putchar('\n');
       }
 
     DestroySPU(&spu);  
