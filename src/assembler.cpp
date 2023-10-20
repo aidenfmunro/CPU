@@ -17,14 +17,14 @@ ErrorCode Compile(const char* filename)
 
     for (size_t position = 0; position < assemblyText.numLines; position++)
       {
-        char* line        = assemblyText.lines[position].string;
-        size_t lineLength = assemblyText.lines[position].length;
+        char* curLine        = assemblyText.lines[position].string;
+        size_t curLineLength = assemblyText.lines[position].length;
 
         char commandCode  = 0; // NOTE: 00000000
         elem_t value = POISON;
         char command[5] = "";
 
-        if (*line == ' ' || *line == ';') // NOTE: skip empty lines and comment lines
+        if (*curLine == ';') // NOTE: skip empty lines and comment lines
             continue;
 
 
@@ -37,9 +37,9 @@ ErrorCode Compile(const char* filename)
         size_t commandLength = 0;
         size_t argumentLength = 0;
 
-        sscanf(line, "%s%n %lg", command, &commandLength, &value);
+        sscanf(curLine, "%s%n %lg", command, &commandLength, &value);
 
-        char* argument = strtok(line + commandLength, " ");
+        char* argument = strtok(curLine + commandLength, " ");
 
         printf("%s ", command);
 
@@ -58,7 +58,7 @@ ErrorCode Compile(const char* filename)
           }
         else if (argumentLength != 0)
           {
-            char* tempPtr = strchr(line, '+');
+            char* tempPtr = strchr(curLine, '+');
 
             if (tempPtr != NULL)
               {

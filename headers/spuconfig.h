@@ -14,9 +14,7 @@ const int BYTES_PER_COMMAND = 16;
 
 enum Command
 {
-
-    #define DEF_COMMAND(name, num, ...) \
-        CMD_ ## name = num,
+    #define DEF_COMMAND(name, num, argc, code) CMD_ ## name = num,
 
     #include "commands.h"
 

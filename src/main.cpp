@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    printf("%d\n", isPointerValid(NULL));
+    // printf("%d\n", isPointerValid(NULL));
     
     Compile("comms.txt");
 

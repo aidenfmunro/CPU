@@ -1,3 +1,4 @@
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,9 +15,17 @@ ErrorCode RunProgram(const char* filename)
 
     CreateSPU(&spu, filename);
 
+    for (size_t i = 0; i < getSize(filename) / 16; i++)
+      {
+        printf("%d, %d, %lg\n", getCommandArgs(i, spu.code), getRegisterNum(i, spu.code), getValue(i, spu.code)); // TODO: why overload 
+      }
+
     for (size_t index = 0;; index++) // TODO: specify the meaning? of / ?
       {
         if (execCommand(&spu, index) == EXIT_CODE) return OK;
+
+        PrintStack(&spu.stack);
+        putchar('\n');
       }
 
     DestroySPU(&spu);  
@@ -99,14 +108,14 @@ ErrorCode execCommand(SPU* spu, const int position)
 
     switch (commandCode)
       {
-        #define DEF_COMMAND(name, number, isArgIm, isArgReg, code) case CMD_ ## name: code; break;                                           
+        #define DEF_COMMAND(name, number, argc, code) case CMD_ ## name: code break;                                           
 
         #include "commands.h"
 
         #undef DEF_COMMAND
-
+        
         default:
-            perror("Unknown command");
+            printf("Unknown command, code: %X \n", commandCode);
             return EXIT_CODE;
       }
     
