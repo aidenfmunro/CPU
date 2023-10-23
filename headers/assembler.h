@@ -38,7 +38,7 @@ ErrorCode Compile(const char* filename);
 
 size_t findLabel(Labels* labels, const char* labelName);
 
-byte parseArgument(char* argument, size_t* curPosition, byte* bytecode);
+byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels);
 
 RegNum getRegisterNum(const char argument);
 

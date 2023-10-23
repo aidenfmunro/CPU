@@ -11,3 +11,14 @@ int main(int argc, char* argv[])
     printf("%d, %s, %c\n", count, command, regsym[0]);
     return 0;
 }
+
+
+push 20
+pop [0]
+
+push [0]
+
+push [rbx + 10]
+
+// RAM - random: read write
+// ROM - read only memory

@@ -69,38 +69,47 @@ ErrorCode DestroySPU(SPU* spu)
     return OK;
 }
 
-elem_t getValue(const size_t position, const byte* bytecode)
+size_t getLabelAddress(const size_t curPosition, const byte* bytecode)
+{
+    CheckPointerValidation(bytecode + (2 * curPosition + 1) * SHIFT);
+
+    return *(size_t*)(bytecode + (2 * curPosition + 1) * SHIFT);
+}
+
+elem_t getValue(const size_t curPosition, const byte* bytecode)
 { 
-    CheckPointerValidation(bytecode + (2 * position + 1) * SHIFT);  
+    CheckPointerValidation(bytecode + (2 * curPosition + 1) * SHIFT);  
 
-    return *(elem_t*)(bytecode + (2 * position + 1) * SHIFT);
+    return *(elem_t*)(bytecode + (2 * curPosition + 1) * SHIFT);
 }
 
-byte getRegisterNum(const size_t position, const byte* bytecode)
+byte getRegisterNum(const size_t curPosition, const byte* bytecode)
 {
-    CheckPointerValidation(bytecode + 2 * position * SHIFT + 1);
+    CheckPointerValidation(bytecode + 2 * curPosition * SHIFT + 1);
 
-    return *(byte*)(bytecode + 2 * position * SHIFT + 1);
+    return *(byte*)(bytecode + 2 * curPosition * SHIFT + 1);
 }
 
-byte getCommandArgs(const size_t position, const byte* bytecode)
+byte getCommandArgs(const size_t curPosition, const byte* bytecode)
 {
-    CheckPointerValidation(bytecode + 2 * position * SHIFT);
+    CheckPointerValidation(bytecode + 2 * curPosition * SHIFT);
 
-    return *(byte*)(bytecode + 2 * position * SHIFT);
+    return *(byte*)(bytecode + 2 * curPosition * SHIFT);
 }
 
-ErrorCode execCommand(SPU* spu, size_t* position)
+ErrorCode execCommand(SPU* spu, size_t* curPosition)
 {    
-    char instruction = getCommandArgs(*position, spu->code);               // TODO: if statements for immed and reg optimize
+    char instruction        = getCommandArgs(*curPosition, spu->code);               // TODO: if statements for immed and reg optimize
 
-    char registerNum = getRegisterNum(*position, spu->code);
+    char registerNum        = getRegisterNum(*curPosition, spu->code);
 
-    elem_t value     = getValue(*position, spu->code);
+    elem_t value            = getValue(*curPosition, spu->code);
 
-    bool isArgReg    = instruction & ARG_FORMAT_REG;
-    bool isArgIm     = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
-    int commandCode  = instruction & 0x1F;                                // TODO: make const 0x0F
+    size_t labelAddress     = getLabelAddress(*curPosition, spu->code);
+
+    bool isArgReg           = instruction & ARG_FORMAT_REG;
+    bool isArgIm            = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
+    int commandCode         = instruction & ARG_FORMAT_CMD;                                // TODO: make const 0x0F
                                                                           // printf("command code = %d; ", commandCode);
                                                                           // printf("value = %lg\n", value); 
                                                                           // TODO: seperate macro for log
@@ -109,16 +118,14 @@ ErrorCode execCommand(SPU* spu, size_t* position)
       {
         #define DEF_COMMAND(name, number, argc, code) case CMD_ ## name: code break;  
 
-        #define DEF_JMP(name, number, sign, code) case CMD_ ## name: code break;                
-
         #include "commands.h"
 
         #undef DEF_COMMAND
-
-        #undef DEF_JMP
         
         default:
             printf("Unknown command, code: %X \n", commandCode);
             return EXIT_CODE;
-      }    
+      } 
+
+    return OK;   
 }

@@ -2,6 +2,7 @@ push 4
 main:
 pop rax
 
+push 5
 string:
 push rax+5
 out

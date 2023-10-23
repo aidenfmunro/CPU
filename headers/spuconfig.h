@@ -12,17 +12,15 @@ const int EXIT_CODE = -1;
 
 const int BYTES_PER_COMMAND = 16;
 
+const char ARG_FORMAT_CMD = 0x1F;
+
 enum Command
 {
     #define DEF_COMMAND(name, num, argc, code) CMD_ ## name = num,
 
-    #define DEF_JMP(name, num, sign, code) CMD_ ## name = num,
-
     #include "commands.h"
 
     #undef DEF_COMMAND
-
-    #undef DEF_JMP
 };
 
 struct SPU
@@ -41,6 +39,8 @@ ErrorCode DestroySPU(SPU* spu);
 ErrorCode RunProgram(const char* filename);
 
 ErrorCode execCommand(SPU* spu, size_t* position);
+
+size_t getLabelAddress(const size_t position, const byte* bytecode);
 
 elem_t getValue(const size_t position, const byte* bytecode);
 
