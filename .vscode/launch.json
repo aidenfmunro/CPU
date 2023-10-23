@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/aidenfmunro/Documents/GitHub/Proccesor/src",
-      "program": "/home/aidenfmunro/Documents/GitHub/Proccesor/src/build/Debug/outDebug",
+      "cwd": "/home/aidenfmunro/Documents/GitHub/Proccesor",
+      "program": "/home/aidenfmunro/Documents/GitHub/Proccesor/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

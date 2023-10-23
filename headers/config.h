@@ -13,5 +13,6 @@ enum ERRORS
     UNABLE_TO_OPEN_FILE = 7,
     UNKNOWN_ASM_COMMAND = 9,
     INVALID_PTR         = 11,
+    INCORRECT_SYNTAX    = 13,
     NON_EXIST_REGISTER  = '0'
 };

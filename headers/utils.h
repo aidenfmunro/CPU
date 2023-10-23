@@ -7,8 +7,8 @@ int StringIsEmpty(const Line* line);
 
 #define CheckPointerValidation(pointer)     \
     do                                      \
-      {                                     \       
-        if (!isPointerValid(&pointer))      \      
+      {                                     \
+        if (!isPointerValid(&pointer))      \
           return INVALID_PTR;               \
       } while(0);                           
 
@@ -28,7 +28,7 @@ int StringIsEmpty(const Line* line);
 #define myWrite(pointer, elemSize, fileSize, fileVar) \
         if (fwrite(pointer, elemSize, fileSize, fileVar) == 0) \
           {                                                    \
-            perror("Error");                                   \                                    
+            perror("Error");                                   \
           }                 
 
 #define myClose(fileVar) \

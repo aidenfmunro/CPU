@@ -51,7 +51,7 @@ enum CORRECTFILE
  * 
  */
 
-#define SWAP(a, b, size)						                                           \ 
+#define SWAP(a, b, size)						                                           \
     do									                                                       \
       {                                                                        \
         char *_a = (char*)a, *_b = (char*)b;					                         \
@@ -60,7 +60,7 @@ enum CORRECTFILE
 	          char _temp = _a[i];						                                     \
 	          _a[i]= _b[i];						                                           \
 	          _b[i] = _temp;						                                         \
-	        } 						                                                       \ 
+	        } 						                                                       \
       } while (0)
 
 /**

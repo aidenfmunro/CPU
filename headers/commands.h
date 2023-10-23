@@ -77,39 +77,19 @@ DEF_COMMAND(HLT, 12, 0,
         return EXIT_CODE; 
     })
 
-/*
-DEF_COMMAND(JMP, 13, 0,
+DEF_JMP(JMP, 13, NULL,
     {
       ;
     })
 
-DEF_COMMAND(JNE, 14, 0,
-    { 
-      ;
-    })
+DEF_JMP(JNE, 14, !=, {;})
 
-DEF_COMMAND(JE, 15, 0,
-    {
-      ;
-    })
+DEF_JMP(JE, 15, =, {;})
 
-DEF_COMMAND(JBE, 16, 0
-    {
-      ;
-    })
+DEF_JMP(JBE, 16, <=, {;})
 
-DEF_COMMAND(JB, 17, 0,
-    {
-      ;
-    })
+DEF_JMP(JB, 17, <, {;})
 
-DEF_COMMAND(JAE, 18, 0,
-    {
-      ;
-    })
+DEF_JMP(JAE, 18, >=, {;})
 
-DEF_COMMAND(JA, 19, 0,
-    {
-      ;
-    })
-*/
+DEF_JMP(JA, 19, >, {;})

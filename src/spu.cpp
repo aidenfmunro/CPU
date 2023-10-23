@@ -20,9 +20,11 @@ ErrorCode RunProgram(const char* filename)
         printf("%d, %d, %lg\n", getCommandArgs(i, spu.code), getRegisterNum(i, spu.code), getValue(i, spu.code)); // TODO: why overload 
       }
 
-    for (size_t index = 0;; index++) // TODO: specify the meaning? of / ?
+    size_t curPosition = 0;
+
+    while(execCommand(&spu, &curPosition) != EXIT_CODE)
       {
-        if (execCommand(&spu, index) == EXIT_CODE) return OK;
+        curPosition += 1;
       }
 
     DestroySPU(&spu);  
@@ -32,7 +34,7 @@ ErrorCode RunProgram(const char* filename)
 
 ErrorCode CreateSPU(SPU* spu, const char* filename)
 {
-    myOpen("code.bin", "rb", codebin); // TODO: обертка над fopen -> какой файл не был открыт, perror: why can be useful?
+     // TODO: обертка над fopen -> какой файл не был открыт, perror: why can be useful?
     
     size_t fileSize = getSize(filename);
     
@@ -48,6 +50,8 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
     CreateStack(stack);
 
     spu->stack = stack;
+
+    myOpen("code.bin", "rb", codebin);
 
     myRead(spu->code, sizeof(byte), fileSize, codebin);
 
@@ -86,35 +90,35 @@ byte getCommandArgs(const size_t position, const byte* bytecode)
     return *(byte*)(bytecode + 2 * position * SHIFT);
 }
 
-ErrorCode execCommand(SPU* spu, const int position)
+ErrorCode execCommand(SPU* spu, size_t* position)
 {    
-    char instruction = getCommandArgs(position, spu->code);               // TODO: if statements for immed and reg optimize
+    char instruction = getCommandArgs(*position, spu->code);               // TODO: if statements for immed and reg optimize
 
-    char registerNum = getRegisterNum(position, spu->code);
+    char registerNum = getRegisterNum(*position, spu->code);
 
-    elem_t value     = getValue(position, spu->code);
+    elem_t value     = getValue(*position, spu->code);
 
     bool isArgReg    = instruction & ARG_FORMAT_REG;
     bool isArgIm     = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
-    int commandCode  = instruction & 0x0F;                                // TODO: make const 0x0F
-
+    int commandCode  = instruction & 0x1F;                                // TODO: make const 0x0F
                                                                           // printf("command code = %d; ", commandCode);
                                                                           // printf("value = %lg\n", value); 
-
                                                                           // TODO: seperate macro for log
 
     switch (commandCode)
       {
-        #define DEF_COMMAND(name, number, argc, code) case CMD_ ## name: code break;                                           
+        #define DEF_COMMAND(name, number, argc, code) case CMD_ ## name: code break;  
+
+        #define DEF_JMP(name, number, sign, code) case CMD_ ## name: code break;                
 
         #include "commands.h"
 
         #undef DEF_COMMAND
+
+        #undef DEF_JMP
         
         default:
             printf("Unknown command, code: %X \n", commandCode);
             return EXIT_CODE;
-      }
-    
-  return OK;
+      }    
 }

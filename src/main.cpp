@@ -9,6 +9,6 @@ int main(void)
     
     Compile("comms.txt");
 
-    RunProgram("code.bin");
+    // RunProgram("code.bin");
 
 }

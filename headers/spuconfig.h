@@ -16,9 +16,13 @@ enum Command
 {
     #define DEF_COMMAND(name, num, argc, code) CMD_ ## name = num,
 
+    #define DEF_JMP(name, num, sign, code) CMD_ ## name = num,
+
     #include "commands.h"
 
     #undef DEF_COMMAND
+
+    #undef DEF_JMP
 };
 
 struct SPU
@@ -36,7 +40,7 @@ ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode RunProgram(const char* filename);
 
-ErrorCode execCommand(SPU* spu, const int position);
+ErrorCode execCommand(SPU* spu, size_t* position);
 
 elem_t getValue(const size_t position, const byte* bytecode);
 
