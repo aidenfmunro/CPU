@@ -1,7 +1,7 @@
 push 4
 main:
 pop rax
-
+main:
 push 5
 string:
 push rax+5

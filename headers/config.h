@@ -14,5 +14,6 @@ enum ERRORS
     UNKNOWN_ASM_COMMAND = 9,
     INVALID_PTR         = 11,
     INCORRECT_SYNTAX    = 13,
+    REPEATING_LABEL     = 15,
     NON_EXIST_REGISTER  = '0'
 };

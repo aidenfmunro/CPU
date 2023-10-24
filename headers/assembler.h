@@ -38,6 +38,10 @@ ErrorCode Compile(const char* filename);
 
 size_t findLabel(Labels* labels, const char* labelName);
 
+bool labelIsInitialized(Labels* labels, const char* labelName);
+
+ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
+
 byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels);
 
 RegNum getRegisterNum(const char argument);
