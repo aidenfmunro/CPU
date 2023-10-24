@@ -5,7 +5,6 @@
 #include "textfuncs.h"
 #include "utils.h"
 #include "spuconfig.h"
-#include "dsl.h"
 
 #define ADD_CMD_FLAGS(flag) result |= (flag);
 
@@ -63,8 +62,6 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
     char labelName[MAX_LABELNAME_LENGTH] = "";
 
     sscanf(curLine, "%s", labelName);
-
-    printf("<%s> yes/no: %d\n", labelName, findLabel(labels, labelName));
 
     if (findLabel(labels, labelName) == LABEL_NOT_FOUND)
       {
@@ -124,19 +121,15 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
         return INCORRECT_SYNTAX;
     printf("command: %s\n", command);
 
-    printf("result: %d\n",   parseArgument(curLine + commandLength + 1,  \
-                                                           curPosition,                  \
-                                                           bytecode,                     \
-                                                           labels));
-
     #define DEF_COMMAND(name, num, argc, code)                                           \
       if (strncasecmp(#name, command, commandLength) == 0)                               \
         {                                                                                \
-          *(bytecode + *curPosition * 16) |= CMD_ ## name ||                             \
+          *(bytecode + *curPosition * 16) |=                                             \
                                              parseArgument(curLine + commandLength + 1,  \
                                                            curPosition,                  \
                                                            bytecode,                     \
                                                            labels);                      \
+          *(bytecode + *curPosition * 16) |= CMD_ ## name;                               \
         }                                                            
         
     #include "commands.h"
