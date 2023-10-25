@@ -22,13 +22,13 @@ struct Labels
 };
 
 
-const int SHIFT = 16;
+const int SHIFT = 8;
 
 const char ARG_FORMAT_IMMED = (1 << 5);
 
 const char ARG_FORMAT_REG = (1 << 6);
 
-const char ARG_FORMAT_RAM = (1 << 7);
+const unsigned char ARG_FORMAT_RAM = (1 << 7);
 
 typedef int CommandCode;
 
@@ -42,11 +42,11 @@ bool labelIsInitialized(Labels* labels, const char* labelName);
 
 ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
-byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels);
+byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
 
 RegNum getRegisterNum(const char argument);
 
-ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* lables);
+ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
 CommandCode getCommandCode(const char* command, const size_t commandLength);
 

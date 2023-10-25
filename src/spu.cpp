@@ -15,17 +15,19 @@ ErrorCode RunProgram(const char* filename)
 
     CreateSPU(&spu, filename);
 
-    for (size_t i = 0; i < getSize(filename) / 16; i++)
-      {
-        printf("%d, %d, %lg\n", getCommandArgs(i, spu.code), getRegisterNum(i, spu.code), getValue(i, spu.code)); // TODO: why overload 
-      }
-
     size_t curPosition = 0;
 
-    while(execCommand(&spu, &curPosition) != EXIT_CODE)
+    for (size_t i = 0;;i++)
       {
-        curPosition += 1;
-      }
+        if (execCommand(&spu, &curPosition) != EXIT_CODE)
+          {
+            curPosition += 1;
+          }
+        else
+          {
+            break;
+          }
+      }   
 
     DestroySPU(&spu);  
 
@@ -109,10 +111,13 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
 
     bool isArgReg           = instruction & ARG_FORMAT_REG;
     bool isArgIm            = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
-    int commandCode         = instruction & ARG_FORMAT_CMD;                                // TODO: make const 0x0F
+    bool isArgRam           = instruction & ARG_FORMAT_RAM;
+    char commandCode        = instruction & ARG_FORMAT_CMD;                                // TODO: make const 0x0F
                                                                           // printf("command code = %d; ", commandCode);
                                                                           // printf("value = %lg\n", value); 
                                                                           // TODO: seperate macro for log
+
+    printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress);
 
     switch (commandCode)
       {

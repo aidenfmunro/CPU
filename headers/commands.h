@@ -79,35 +79,71 @@ DEF_COMMAND(HLT, 12, 0,
 
 DEF_COMMAND(JMP, 13, 0,
     {
-      ;
+      *curPosition = labelAddress;
     })
 
 DEF_COMMAND(JNE, 14, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a != b)
+        {
+          *curPosition = labelAddress;
+        }
     })
 
 DEF_COMMAND(JE, 15, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a == b)
+        {
+          *curPosition = labelAddress;
+        }
     })
 
 DEF_COMMAND(JBE, 16, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a <= b)
+        {
+          *curPosition = labelAddress;
+        }
     })
 
 DEF_COMMAND(JB, 17, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a < b)
+        {
+          *curPosition = labelAddress;
+        }
     })
 
 DEF_COMMAND(JAE, 18, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a >= b)
+        {
+          *curPosition = labelAddress;
+        }
     })
 
 DEF_COMMAND(JA, 19, 0,
     {
-      ;
+      elem_t b = POP();
+      elem_t a = POP();
+
+      if (a > b)
+        {
+          *curPosition = labelAddress;
+        }
     })

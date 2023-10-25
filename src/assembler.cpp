@@ -34,12 +34,12 @@ ErrorCode Compile(const char* filename)
 
     size_t curPosition = 0;
 
-    for (size_t runNum = 0; runNum < 1; runNum++) // TODO: change runnum to 2
+    for (size_t runNum = 1; runNum < 3; runNum++) // TODO: change runnum to 2
       {
         curPosition = 0;
 
         for (size_t index = 0; index < numLines; index++)
-            proccessLine(&assemblyText, bytecode, index, &curPosition, &labels); 
+            proccessLine(&assemblyText, bytecode, index, &curPosition, &labels, runNum); 
       }  
     
     myOpen("code.bin", "wb", codebin);
@@ -65,7 +65,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
 
     if (findLabel(labels, labelName) == LABEL_NOT_FOUND)
       {
-        labels->label[labels->count].address = *curPosition + 1;
+        labels->label[labels->count].address = *curPosition - 1;
 
         memcpy(labels->label[labels->count++].name, labelName, strlen(labelName));
 
@@ -90,7 +90,7 @@ size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t t
     return LABEL_NOT_FOUND;
 }
 
-ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* labels) // TODO: input const char*
+ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
 {
     char* curLine = assemblyText->lines[index].string;
 
@@ -128,8 +128,9 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
                                              parseArgument(curLine + commandLength + 1,  \
                                                            curPosition,                  \
                                                            bytecode,                     \
-                                                           labels);                      \
-          *(bytecode + *curPosition * 16) |= CMD_ ## name;                               \
+                                                           labels, runNum);              \
+          if (runNum == 1)                                                               \
+              *(bytecode + *curPosition * 16) |= CMD_ ## name;                           \
         }                                                            
         
     #include "commands.h"
@@ -141,50 +142,53 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
     return OK;                        
 }
 
-byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels)
+byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
     char result  = 0; // TODO: change result name
 
-    char* openBracketPtr  = strchr(argument, '[');
-    char* closeBracketPtr = strchr(argument, ']');
-
-    if (openBracketPtr && closeBracketPtr)
-      {
-        argument = closeBracketPtr + 1;
-        ADD_CMD_FLAGS(ARG_FORMAT_RAM);
-      }
-
-    char regArg = 0;
-
     int check   = 0;
 
-    if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
+    if (runNum == 1)
       {
-        ADD_CMD_FLAGS(ARG_FORMAT_REG);
+        char* openBracketPtr  = strchr(argument, '[');
+        char* closeBracketPtr = strchr(argument, ']');
 
-        char regNum = regArg - 'a' + 1;
-
-        printf(" %c", regNum);
-
-        ASSIGN_CMD_ARG(regNum, char, sizeof(char));
-
-        argument += check;
-      }
-    
-    char* plusPtr = strchr(argument, '+');
-
-    if (plusPtr)
-        argument = plusPtr + 1;
-      
-    elem_t value = POISON;
-
-    if (sscanf(argument, "%lg%n", &value, &check) == 1)
-      {
-        if (check != 0)
+        if (openBracketPtr && closeBracketPtr)
           {
-            printf(" value = %lg\n", value);
-            ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
-            ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
+            argument = closeBracketPtr + 1;
+            ADD_CMD_FLAGS(ARG_FORMAT_RAM);
+          }
+
+        char regArg = 0;
+
+        if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
+          {
+            ADD_CMD_FLAGS(ARG_FORMAT_REG);
+
+            char regNum = regArg - 'a' + 1;
+
+            printf(" %c", regNum);
+
+            ASSIGN_CMD_ARG(regNum, char, sizeof(char));
+
+            argument += check;
+          }
+        
+        char* plusPtr = strchr(argument, '+');
+
+        if (plusPtr)
+            argument = plusPtr + 1;
+          
+        elem_t value = POISON;
+
+        if (sscanf(argument, "%lg%n", &value, &check) == 1)
+          {
+            if (check != 0)
+              {
+                printf(" value = %lg\n", value);
+                ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
+                ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
+              }
           }
       }
     
@@ -204,14 +208,4 @@ byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* 
       }
     
     return result;
-}
-
-void printbytecode(Text* text, SPU* spu)
-{
-    for(size_t i = 0; i < text->numLines; i++)
-      {
-        printf("info1 = %d ", *(spu->code + i * 2 * SHIFT));
-        printf("info2 = %d ", *(spu->code + i * 2 * SHIFT + 1));
-        printf("value = %lg\n", *(double*)(spu->code + i * 2 * SHIFT + SHIFT));
-      }
 }

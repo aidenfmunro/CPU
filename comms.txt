@@ -1,11 +1,23 @@
-push 4
-main:
+in
+in
+in
+pop rcx
+pop rbx
 pop rax
+jmp discr
+
 main:
-push 5
-string:
-push rax+5
-out
-jmp main
-jmp string
-hlt
+    out
+    hlt
+
+discr:
+    push rbx
+    push rbx
+    mul
+    push 4
+    push rax
+    push rcx
+    mul
+    mul
+    div
+    jmp main
