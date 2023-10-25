@@ -3,5 +3,4 @@
 *.txt
 *.bin
 *.o
-/.gitmodules
-/test.cpp
+.gitmodules
