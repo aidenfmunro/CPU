@@ -8,7 +8,11 @@
 
 #define ADD_CMD_FLAGS(flag) result |= (flag);
 
+#define ASSIGN_CMD_ARGS(args) *(bytecode + *curPosition * 16) |= (args) 
+
 #define ASSIGN_CMD_ARG(arg, type, shift) *(type*)(bytecode + shift + *curPosition * 16) = (arg)
+
+#define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
 const uint32_t POSITION_SHIFT = 8;
 
@@ -26,7 +30,7 @@ ErrorCode Compile(const char* filename)
 
     Labels labels = {.count = 0};
 
-    labels.label = (Label*)calloc(MAX_LABEL_AMOUNT, sizeof(Label)); // NOTE: max is half of the amount of lines
+    labels.label = (Label*)calloc(MAX_LABEL_AMOUNT, sizeof(Label));
 
     //----------------
 
@@ -48,9 +52,7 @@ ErrorCode Compile(const char* filename)
 
     myClose(codebin);
 
-    DestroyText(&assemblyText);
-
-    free(bytecode);
+    freeEverything;
 
     return OK;
 }
@@ -59,6 +61,8 @@ const size_t LABEL_NOT_FOUND = -1;
 
 ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
 {
+    CheckPointerValidation(labels);
+
     char labelName[MAX_LABELNAME_LENGTH] = "";
 
     sscanf(curLine, "%s", labelName);
@@ -92,6 +96,10 @@ size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t t
 
 ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
 {
+    CheckPointerValidation(assemblyText);
+    CheckPointerValidation(bytecode);
+    CheckPointerValidation(labels);
+
     char* curLine = assemblyText->lines[index].string;
 
     if (StringIsEmpty(&assemblyText->lines[index])) // ??? remake to char* 
@@ -119,18 +127,20 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
 
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
+
     printf("command: %s\n", command);
 
     #define DEF_COMMAND(name, num, argc, code)                                           \
       if (strncasecmp(#name, command, commandLength) == 0)                               \
         {                                                                                \
-          *(bytecode + *curPosition * 16) |=                                             \
-                                             parseArgument(curLine + commandLength + 1,  \
-                                                           curPosition,                  \
+          ASSIGN_CMD_ARGS(parseArgument(curLine + commandLength + 1,                     \
+                                                        curPosition,                     \
                                                            bytecode,                     \
-                                                           labels, runNum);              \
+                                                             labels,                     \
+                                                              runNum));                  \
+                                                                                         \
           if (runNum == 1)                                                               \
-              *(bytecode + *curPosition * 16) |= CMD_ ## name;                           \
+              ASSIGN_CMD_ARGS(CMD_ ## name);                                             \
         }                                                            
         
     #include "commands.h"
@@ -144,6 +154,10 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
 
 byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
+    CheckPointerValidation(argument);
+    CheckPointerValidation(bytecode);
+    CheckPointerValidation(labels);
+
     char result  = 0; // TODO: change result name
 
     int check   = 0;
