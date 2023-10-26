@@ -26,13 +26,9 @@ ErrorCode Compile(const char* filename)
 
     byte* bytecode = (byte*)calloc(numLines, sizeof(elem_t) * 2); // TODO: calloc return macro/function check
 
-    // ----labels----
-
     Labels labels = {.count = 0};
 
     labels.label = (Label*)calloc(MAX_LABEL_AMOUNT, sizeof(Label));
-
-    //----------------
 
     CheckPointerValidation(bytecode); // TODO: mycalloc to check for return value
 
