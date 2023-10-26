@@ -8,7 +8,15 @@ DEF_COMMAND(PUSH, 1, 1,
         {
           PUSH(spu->regs[registerNum]);
         }
-      else
+      else if (isArgRam && isArgReg)
+        {
+          PUSH(spu->RAM[size_t(spu->regs[registerNum])]);
+        }
+      else if (isArgIm && isArgReg && isArgRam)
+        {
+          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
+        }
+      else if (isArgIm)
         {
           PUSH(value);
         }
@@ -19,6 +27,18 @@ DEF_COMMAND(POP, 2, 1,
       if (isArgIm && isArgReg)
         {
           spu->regs[registerNum] = POP() + value;
+        }
+      else if (isArgReg && isArgRam)
+        {
+          spu->RAM[size_t(spu->regs[registerNum])] = POP();
+        }
+      else if (isArgReg && isArgRam && isArgIm)
+        {
+          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
+        }
+      else if (isArgRam && isArgIm)
+        {
+          spu->RAM[size_t(value)] = POP();
         }
       else if (isArgReg)
         { 

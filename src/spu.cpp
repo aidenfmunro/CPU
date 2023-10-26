@@ -19,16 +19,9 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE)
-          {
-            curPosition += 1;
-          }
-        else
-          {
-            break;
-          }
-      }   
-
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) curPosition += 1;
+        else break;
+      }
     DestroySPU(&spu);  
 
     return OK;
@@ -101,6 +94,8 @@ byte getCommandArgs(const size_t curPosition, const byte* bytecode)
 
 ErrorCode execCommand(SPU* spu, size_t* curPosition)
 {    
+    CheckPointerValidation(spu);
+    
     char instruction        = getCommandArgs(*curPosition, spu->code);               // TODO: if statements for immed and reg optimize
 
     char registerNum        = getRegisterNum(*curPosition, spu->code);
