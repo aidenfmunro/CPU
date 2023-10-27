@@ -1,6 +1,8 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #define DOUBLE_T
 #define logfilename "log.txt"
-
 
 typedef int ErrorCode;
 
@@ -18,3 +20,5 @@ enum ERRORS
     REPEATING_LABEL     = 15,
     NON_EXIST_REGISTER  = '0'
 };
+
+#endif

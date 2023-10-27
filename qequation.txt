@@ -1,0 +1,69 @@
+in
+in
+in
+pop rcx
+pop rbx
+pop rax
+
+push rax
+pop rdx
+
+call discr
+
+push rdx
+push 0
+
+jb noroots
+
+push rdx
+push 0
+
+je oneroot
+
+push rdx
+push 0
+
+ja tworoots
+
+lineareq:
+    push rbx
+    pop rdx
+    call is_zero
+    push 1
+    jmp oneroot
+
+noroots:
+    push 0
+    out
+    hlt
+
+oneroot:
+    push 1
+    out
+    push 0
+    push rcx
+    sub
+    push rbx
+    div
+    push 2
+    div
+    out 
+    hlt
+
+tworoots:
+    push 2
+    out
+    hlt
+
+discr:
+    push rbx
+    push rbx
+    mul
+    push 4
+    push rax
+    push rcx
+    mul
+    mul
+    sub
+    pop rdx
+    ret

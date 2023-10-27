@@ -19,7 +19,7 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) {curPosition += 1; PrintStack(&spu.calls); PrintStack(&spu.stack);}
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) {curPosition += 1; ON_DEBUG(PrintStack(&spu.calls); PrintStack(&spu.stack);)}
         else {break;}
       }
 
@@ -119,7 +119,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                                                                           // printf("value = %lg\n", value); 
                                                                           // TODO: seperate macro for log
 
-    printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress);
+    ON_DEBUG(printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress));
 
     switch (commandCode)
       {

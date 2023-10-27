@@ -1,6 +1,7 @@
 *.vscode
 *.out
-*.txt
+/simple.txt
+/log.txt
 *.bin
 *.o
 .gitmodules

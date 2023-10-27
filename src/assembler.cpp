@@ -2,6 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include "assembler.h"
+#include "config.h"
 #include "textfuncs.h"
 #include "utils.h"
 #include "spuconfig.h"
@@ -89,7 +90,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
         return OK;
       }
 
-    printf("label <%s> already exists!\n", labelName);
+    ON_DEBUG(printf("label <%s> already exists!\n", labelName));
 
     return REPEATING_LABEL;    
 }
@@ -141,7 +142,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
 
-    printf("command: %s\n", command);
+    ON_DEBUG(printf("command: %s\n", command));
 
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
@@ -186,18 +187,20 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
     char regArg = 0;
 
-    if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
+    if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
       {
         ADD_CMD_FLAGS(ARG_FORMAT_REG);
 
         char regNum = regArg - 'a' + 1;
 
-        printf(" %c", regNum);
+        ON_DEBUG(printf(" %c", regNum));
 
         if (runNum == 1) ASSIGN_CMD_ARG(regNum, char, sizeof(char));
 
         argument += check;
       }
+    else
+        check = 0;
     
     if (regArg != 0) {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));} else {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
@@ -233,7 +236,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
         if (check != 0 && labelAddress != LABEL_NOT_FOUND)
           {
-            printf("label address: %ld\n", labelAddress);
+            ON_DEBUG(printf("label address: %ld\n", labelAddress));
 
             ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
 

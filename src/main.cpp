@@ -7,7 +7,7 @@ int main(void)
 {
     // printf("%d\n", isPointerValid(NULL));
     
-    Compile("qeq.txt", "listing.txt");
+    Compile("qequation.txt", "listing.txt");
 
     RunProgram("code.bin");
 

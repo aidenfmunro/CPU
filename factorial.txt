@@ -1,0 +1,30 @@
+in        ; input n                     
+pop rax
+
+push 1
+pop rbx                       
+
+call factorial
+
+return:
+    push rbx
+    out
+    hlt
+
+factorial: 
+    push rax
+    push 2
+    jb return
+
+    push rax
+    push rbx
+    mul
+    pop rbx
+
+    push rax
+    push 1
+    sub
+    pop rax
+
+    call factorial
+    ret
