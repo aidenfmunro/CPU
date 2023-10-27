@@ -7,7 +7,7 @@ int main(void)
 {
     // printf("%d\n", isPointerValid(NULL));
     
-    Compile("comms.txt");
+    Compile("comms.txt", "listing.txt");
 
     RunProgram("code.bin");
 

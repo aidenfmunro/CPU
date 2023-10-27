@@ -4,4 +4,7 @@
 #define PUSH(value) Push(&spu->stack, value)
 #define POP()       Pop(&spu->stack)
 
+#define PUSHC(value) Push(&spu->calls, value)
+#define POPC()       Pop(&spu->calls)
+
 #endif

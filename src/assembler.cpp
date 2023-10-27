@@ -14,9 +14,11 @@
 
 #define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
+#define WRITE_LISTING(...) if (runNum == 2) __VA_ARGS__
+
 const uint32_t POSITION_SHIFT = 8;
 
-ErrorCode Compile(const char* filename)
+ErrorCode Compile(const char* filename, const char* listingFileName)
 {
     Text assemblyText = {};
 
@@ -32,14 +34,27 @@ ErrorCode Compile(const char* filename)
 
     CheckPointerValidation(bytecode); // TODO: mycalloc to check for return value
 
+    myOpen("listing.txt", "w", listingFile);
+
     size_t curPosition = 0;
 
     for (size_t runNum = 1; runNum < 3; runNum++) // TODO: change runnum to 2
       {
         curPosition = 0;
 
+        WRITE_LISTING(fprintf(listingFile, "Author: Aiden Munro\nVersion: 2.0\n\n"));
+        WRITE_LISTING(fprintf(listingFile, "All labels:\n\n"));
+
+        for (size_t i = 0; i < labels.count; i++)
+          {
+            WRITE_LISTING(fprintf(listingFile, "\t\t%8s\t0x%08lX\n", labels.label[i].name, labels.label[i].address * SHIFT * 2));
+          }
+
+        WRITE_LISTING(fprintf(listingFile, "\n%5s%14s%9s%8s%11s\n",
+                                           "Line:", "Address:", "Cmd:", "Reg:", "Value:"));
+
         for (size_t index = 0; index < numLines; index++)
-            proccessLine(&assemblyText, bytecode, index, &curPosition, &labels, runNum); 
+            proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum); 
       }  
     
     myOpen("code.bin", "wb", codebin);
@@ -47,6 +62,8 @@ ErrorCode Compile(const char* filename)
     myWrite(bytecode, sizeof(byte), numLines * 2 * sizeof(elem_t), codebin);
 
     myClose(codebin);
+
+    myClose(listingFile);
 
     freeEverything;
 
@@ -90,7 +107,7 @@ size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t t
     return LABEL_NOT_FOUND;
 }
 
-ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
+ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
 {
     CheckPointerValidation(assemblyText);
     CheckPointerValidation(bytecode);
@@ -129,7 +146,8 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
     #define DEF_COMMAND(name, num, argc, code)                                           \
       if (strncasecmp(#name, command, commandLength) == 0)                               \
         {                                                                                \
-          ASSIGN_CMD_ARGS(parseArgument(curLine + commandLength + 1,                     \
+          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%08lX] %4s", *curPosition, "", *curPosition * SHIFT * 2, command));\
+          ASSIGN_CMD_ARGS(parseArgument(listingFile, curLine + commandLength + 1,                     \
                                                         curPosition,                     \
                                                            bytecode,                     \
                                                              labels,                     \
@@ -148,7 +166,7 @@ ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t*
     return OK;                        
 }
 
-byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
+byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
     CheckPointerValidation(argument);
     CheckPointerValidation(bytecode);
@@ -158,47 +176,51 @@ byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* 
 
     int check   = 0;
 
-    if (runNum == 1)
+    char* openBracketPtr  = strchr(argument, '[');
+    char* closeBracketPtr = strchr(argument, ']');
+
+    if (openBracketPtr && closeBracketPtr)
       {
-        char* openBracketPtr  = strchr(argument, '[');
-        char* closeBracketPtr = strchr(argument, ']');
+        argument = closeBracketPtr + 1;
+        if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_RAM);
+      }
 
-        if (openBracketPtr && closeBracketPtr)
+    char regArg = 0;
+
+    if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
+      {
+        if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_REG);
+
+        char regNum = regArg - 'a' + 1;
+
+        printf(" %c", regNum);
+
+        if (runNum == 1) ASSIGN_CMD_ARG(regNum, char, sizeof(char));
+
+        argument += check;
+      }
+    
+    if (regArg != 0) {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));} else {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
+    
+    char* plusPtr = strchr(argument, '+');
+
+    if (plusPtr)
+        argument = plusPtr + 1;
+      
+    elem_t value = POISON;
+
+    if (sscanf(argument, "%lg%n", &value, &check) == 1)
+      {
+        if (check != 0)
           {
-            argument = closeBracketPtr + 1;
-            ADD_CMD_FLAGS(ARG_FORMAT_RAM);
+            WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", value));
+
+            if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
+            if (runNum == 1) ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
           }
-
-        char regArg = 0;
-
-        if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
+        else
           {
-            ADD_CMD_FLAGS(ARG_FORMAT_REG);
-
-            char regNum = regArg - 'a' + 1;
-
-            printf(" %c", regNum);
-
-            ASSIGN_CMD_ARG(regNum, char, sizeof(char));
-
-            argument += check;
-          }
-        
-        char* plusPtr = strchr(argument, '+');
-
-        if (plusPtr)
-            argument = plusPtr + 1;
-          
-        elem_t value = POISON;
-
-        if (sscanf(argument, "%lg%n", &value, &check) == 1)
-          {
-            if (check != 0)
-              {
-                printf(" value = %lg\n", value);
-                ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
-                ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
-              }
+            WRITE_LISTING(fprintf(listingFile, "%5s----------", ""));
           }
       }
     
@@ -213,9 +235,14 @@ byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* 
         if (check != 0 && labelAddress != LABEL_NOT_FOUND)
           {
             printf("label address: %ld\n", labelAddress);
+
             ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
+
+            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", labelAddress * SHIFT * 2));
           }
       }
     
+    WRITE_LISTING(fprintf(listingFile, "\n"));
+
     return result;
 }

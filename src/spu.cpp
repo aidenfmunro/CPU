@@ -19,9 +19,10 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) curPosition += 1;
-        else break;
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) {curPosition += 1; PrintStack(&spu.calls); PrintStack(&spu.stack);}
+        else {break;}
       }
+
     DestroySPU(&spu);  
 
     return OK;
@@ -29,8 +30,6 @@ ErrorCode RunProgram(const char* filename)
 
 ErrorCode CreateSPU(SPU* spu, const char* filename)
 {
-     // TODO: обертка над fopen -> какой файл не был открыт, perror: why can be useful?
-    
     size_t fileSize = getSize(filename);
     
     byte* temp = (byte*)calloc(sizeof(byte), fileSize);// TODO: rename variable
@@ -42,9 +41,15 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 
     Stack stack = {};
 
+    Stack calls = {};
+
+    CreateStack(calls);
+
     CreateStack(stack);
 
     spu->stack = stack;
+
+    spu->calls = calls;
 
     myOpen("code.bin", "rb", codebin);
 
@@ -58,6 +63,8 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 ErrorCode DestroySPU(SPU* spu)
 {
     DestroyStack(&spu->stack);
+
+    DestroyStack(&spu->calls);
 
     free(spu->code);
 

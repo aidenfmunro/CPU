@@ -10,11 +10,11 @@ DEF_COMMAND(PUSH, 1, 1,
         }
       else if (isArgRam && isArgReg)
         {
-          PUSH(spu->RAM[size_t(spu->regs[registerNum])]);
+          PUSH(*(elem_t*)spu->RAM[size_t(spu->regs[registerNum])]);
         }
       else if (isArgIm && isArgReg && isArgRam)
         {
-          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
+          PUSH(*(elem_t*)spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
         }
       else if (isArgIm)
         {
@@ -30,15 +30,15 @@ DEF_COMMAND(POP, 2, 1,
         }
       else if (isArgReg && isArgRam)
         {
-          spu->RAM[size_t(spu->regs[registerNum])] = POP();
+          *(elem_t*)spu->RAM[size_t(spu->regs[registerNum])] = POP();
         }
       else if (isArgReg && isArgRam && isArgIm)
         {
-          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
+          *(elem_t*)spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
         }
       else if (isArgRam && isArgIm)
         {
-          spu->RAM[size_t(value)] = POP();
+          *(elem_t*)spu->RAM[size_t(value)] = POP();
         }
       else if (isArgReg)
         { 
@@ -50,6 +50,15 @@ DEF_COMMAND(IN, 3, 0,
     {
       scanf("%lg", &value);
       PUSH(value);
+
+      if (isArgReg)
+        {
+          spu->regs[registerNum] = POP();
+        }
+      else if (isArgRam)
+        {
+          *(elem_t*)spu->RAM[size_t(value)] = POP();
+        }
     })
 
 DEF_COMMAND(ADD, 4, 0,
@@ -118,7 +127,7 @@ DEF_COMMAND(JE, 15, 0,
       elem_t b = POP();
       elem_t a = POP();
 
-      if (a == b)
+      if (a == b) // double values comparisson 
         {
           *curPosition = labelAddress;
         }
@@ -166,4 +175,16 @@ DEF_COMMAND(JA, 19, 0,
         {
           *curPosition = labelAddress;
         }
+    })
+
+DEF_COMMAND(CALL, 20, 0,
+    {
+      PUSHC(*curPosition);
+      
+      *curPosition = labelAddress;
+    })
+
+DEF_COMMAND(RET, 21, 0,
+    {
+      *curPosition = size_t(POPC());
     })

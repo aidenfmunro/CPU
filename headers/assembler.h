@@ -34,7 +34,7 @@ typedef int CommandCode;
 
 typedef char RegNum;
 
-ErrorCode Compile(const char* filename);
+ErrorCode Compile(const char* filename, const char* listingFileName);
 
 size_t findLabel(Labels* labels, const char* labelName);
 
@@ -42,20 +42,11 @@ bool labelIsInitialized(Labels* labels, const char* labelName);
 
 ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
-byte parseArgument(char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
+byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
 
 RegNum getRegisterNum(const char argument);
 
-ErrorCode proccessLine(Text* assemblyText, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
+ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
-CommandCode getCommandCode(const char* command, const size_t commandLength);
-
-ErrorCode writeValue(const size_t index, const byte* bytecode, const elem_t value);
-
-ErrorCode writeRegisterNum(const size_t position, const byte* bytecode, const char registerNum);
-
-ErrorCode writeCommandArgs(const size_t position, const byte* bytecode, const char commandCode);
-
-void printbytecode(Text* text, SPU* spu);
 
 #endif
