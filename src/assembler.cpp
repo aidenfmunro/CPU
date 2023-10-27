@@ -47,10 +47,10 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
         for (size_t i = 0; i < labels.count; i++)
           {
-            WRITE_LISTING(fprintf(listingFile, "\t\t%8s\t0x%08lX\n", labels.label[i].name, labels.label[i].address * SHIFT * 2));
+            WRITE_LISTING(fprintf(listingFile, "\t\t%8s\t0x%08lX\t(%ld)\n", labels.label[i].name, labels.label[i].address * SHIFT * 2, labels.label[i].address));
           }
 
-        WRITE_LISTING(fprintf(listingFile, "\n%5s%14s%9s%8s%11s\n",
+        WRITE_LISTING(fprintf(listingFile, "\n%5s%14s%17s%8s%11s\n",
                                            "Line:", "Address:", "Cmd:", "Reg:", "Value:"));
 
         for (size_t index = 0; index < numLines; index++)
@@ -82,7 +82,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
 
     if (findLabel(labels, labelName) == LABEL_NOT_FOUND)
       {
-        labels->label[labels->count].address = *curPosition - 1;
+        labels->label[labels->count].address = *curPosition - 1; // !!!
 
         memcpy(labels->label[labels->count++].name, labelName, strlen(labelName));
 
@@ -143,25 +143,24 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     printf("command: %s\n", command);
 
-    #define DEF_COMMAND(name, num, argc, code)                                           \
-      if (strncasecmp(#name, command, commandLength) == 0)                               \
-        {                                                                                \
-          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%08lX] %4s", *curPosition, "", *curPosition * SHIFT * 2, command));\
-          ASSIGN_CMD_ARGS(parseArgument(listingFile, curLine + commandLength + 1,                     \
-                                                        curPosition,                     \
-                                                           bytecode,                     \
-                                                             labels,                     \
-                                                              runNum));                  \
-                                                                                         \
-          if (runNum == 1)                                                               \
-              ASSIGN_CMD_ARGS(CMD_ ## name);                                             \
+    #define DEF_COMMAND(name, num, argc, code)                                                                              \
+      if (strcasecmp(#name, command) == 0)                                                                                  \
+        {                                                                                                                   \
+          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%016lX] %4s", *curPosition, "", *curPosition * SHIFT * 2, command));\
+          ASSIGN_CMD_ARGS(parseArgument(listingFile, curLine + commandLength + 1,                                           \
+                                                        curPosition,                                                        \
+                                                           bytecode,                                                        \
+                                                             labels,                                                        \
+                                                              runNum));                                                     \
+                                                                                                                            \
+          if (runNum == 1)                                                                                                  \
+              ASSIGN_CMD_ARGS(CMD_ ## name);                                                                                \
+          *curPosition += 1;                                                                                                \
         }                                                            
         
     #include "commands.h"
 
     #undef DEF_COMMAND
-
-    *curPosition += 1;
 
     return OK;                        
 }
@@ -174,7 +173,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
     char result  = 0; // TODO: change result name
 
-    int check   = 0;
+    int check    = 0;
 
     char* openBracketPtr  = strchr(argument, '[');
     char* closeBracketPtr = strchr(argument, ']');
@@ -189,7 +188,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
     if (sscanf(argument, "r%cx%n", &regArg, &check) == 1)
       {
-        if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_REG);
+        ADD_CMD_FLAGS(ARG_FORMAT_REG);
 
         char regNum = regArg - 'a' + 1;
 
@@ -238,7 +237,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
             ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
 
-            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", labelAddress * SHIFT * 2));
+            WRITE_LISTING(fprintf(listingFile, "%5s0x%016lX", "", labelAddress * SHIFT * 2));
           }
       }
     

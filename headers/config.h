@@ -1,6 +1,7 @@
 #define DOUBLE_T
 #define logfilename "log.txt"
 
+
 typedef int ErrorCode;
 
 const int NULLPTR = 0;
