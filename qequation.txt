@@ -6,7 +6,9 @@ pop rbx
 pop rax
 
 push rax
-pop rdx
+push 0
+
+je lineareq
 
 call discr
 
@@ -27,17 +29,8 @@ ja tworoots
 
 lineareq:
     push rbx
-    pop rdx
-    call is_zero
-    push 1
-    jmp oneroot
-
-noroots:
     push 0
-    out
-    hlt
-
-oneroot:
+    je isczero
     push 1
     out
     push 0
@@ -45,9 +38,36 @@ oneroot:
     sub
     push rbx
     div
-    push 2
-    div
     out 
+    hlt
+
+isczero:
+    push rcx
+    push 0
+    je inf
+    push rcx
+    push 0
+    jne noroots
+
+inf:
+    push -1
+    out
+    hlt        
+
+noroots:
+    push 0
+    out
+    hlt
+
+oneroot:
+    push 0 
+    push rbx
+    sub
+    push 2
+    push rax
+    mul
+    div
+    out
     hlt
 
 tworoots:
