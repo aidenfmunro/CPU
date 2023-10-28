@@ -1,3 +1,4 @@
+push 0
 in
 in
 in
@@ -31,10 +32,12 @@ lineareq:
     push rbx
     push 0
     je isczero
+    push 1
+    out
     push 0
-    push rcx
-    sub
     push rbx
+    sub
+    push rcx
     div
     out 
     hlt
@@ -42,12 +45,12 @@ lineareq:
 isczero:
     push rcx
     push 0
-    je inf
+    je toomany
     push rcx
     push 0
     jne noroots
 
-inf:
+toomany:
     push -1
     out
     hlt        

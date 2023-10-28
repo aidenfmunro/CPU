@@ -191,7 +191,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
       {
         ADD_CMD_FLAGS(ARG_FORMAT_REG);
 
-        char regNum = regArg - 'a' + 1;
+        char regNum = regArg - 'a';
 
         ON_DEBUG(printf(" %c", regNum));
 
@@ -218,16 +218,19 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
       {
         if (check != 0)
           {
-            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", value));
+            WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", value));
 
             if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
             if (runNum == 1) ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
+
           }
         else
           {
             WRITE_LISTING(fprintf(listingFile, "%5s----------", ""));
           }
       }
+
+    check = 0;
     
     if (result == 0)
       {
@@ -241,9 +244,9 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
           {
             ON_DEBUG(printf("label address: %ld\n", labelAddress));
 
-            ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
+            if (runNum == 2) ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
 
-            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", labelAddress * SHIFT * 2));
+            WRITE_LISTING(fprintf(listingFile, "%5s%ld", "", labelAddress));
           }
       }
     

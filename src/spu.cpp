@@ -23,6 +23,8 @@ ErrorCode RunProgram(const char* filename)
         else {break;}
       }
 
+    stackDump(&spu.calls, "log.txt", 26, "run");
+
     DestroySPU(&spu);  
 
     return OK;
@@ -119,7 +121,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                                                                           // printf("value = %lg\n", value); 
                                                                           // TODO: seperate macro for log
 
-    ON_DEBUG(printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress));
+    printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress);
 
     switch (commandCode)
       {
