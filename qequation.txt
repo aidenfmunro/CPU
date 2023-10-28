@@ -53,6 +53,31 @@ oneroot:
 tworoots:
     push 2
     out
+
+    push 0 ;first root
+    push rbx
+    sub
+    push rdx
+    sqrt
+    sub
+    push 2
+    push rax
+    mul
+    div
+    out
+
+    push 0 ; second root
+    push rbx
+    sub
+    push rdx
+    sqrt
+    add
+    push 2
+    push rax
+    mul
+    div
+    out
+
     hlt
 
 discr:

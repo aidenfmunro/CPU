@@ -215,7 +215,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
       {
         if (check != 0)
           {
-            WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", value));
+            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", value));
 
             if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
             if (runNum == 1) ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
@@ -240,7 +240,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
             ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
 
-            WRITE_LISTING(fprintf(listingFile, "%5s0x%016lX", "", labelAddress * SHIFT * 2));
+            WRITE_LISTING(fprintf(listingFile, "%5s0x%08lX", "", labelAddress * SHIFT * 2));
           }
       }
     
