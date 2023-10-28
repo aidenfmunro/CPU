@@ -18,6 +18,7 @@ return:
 factorial: 
     push rax
     push 2
+    
     jb return
 
     push rax

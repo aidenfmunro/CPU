@@ -200,7 +200,10 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
         argument += check;
       }
     else
+      {
         check = 0;
+        regArg = 0;
+      }
     
     if (regArg != 0) {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));} else {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
