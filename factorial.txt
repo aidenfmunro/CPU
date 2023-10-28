@@ -1,6 +1,10 @@
 in        ; input n                     
 pop rax
 
+push rax
+push 0
+jb negativenum
+
 push 1
 pop rbx                       
 
@@ -28,3 +32,8 @@ factorial:
 
     call factorial
     ret
+
+negativenum:
+    push -1
+    out 
+    hlt

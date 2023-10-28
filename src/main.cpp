@@ -5,10 +5,7 @@
 
 int main(void)
 {
-    // printf("%d\n", isPointerValid(NULL));
-    
-    Compile("qequation.txt", "listing.txt");
+    Compile("factorial.txt", "listing.txt");
 
     RunProgram("code.bin");
-
 }

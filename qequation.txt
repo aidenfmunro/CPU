@@ -31,8 +31,6 @@ lineareq:
     push rbx
     push 0
     je isczero
-    push 1
-    out
     push 0
     push rcx
     sub

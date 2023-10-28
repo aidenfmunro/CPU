@@ -43,8 +43,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
       {
         curPosition = 0;
 
-        WRITE_LISTING(fprintf(listingFile, "Author: Aiden Munro\nVersion: 2.0\n\n"));
-        WRITE_LISTING(fprintf(listingFile, "All labels:\n\n"));
+        WRITE_LISTING(fprintf(listingFile, "%s\nAuthor: Aiden Munro\nVersion: 2.0\n\nAll labels:\n\n", getTime()));
 
         for (size_t i = 0; i < labels.count; i++)
           {
@@ -156,6 +155,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                                                                                                                             \
           if (runNum == 1)                                                                                                  \
               ASSIGN_CMD_ARGS(CMD_ ## name);                                                                                \
+                                                                                                                            \
           *curPosition += 1;                                                                                                \
         }                                                            
         
