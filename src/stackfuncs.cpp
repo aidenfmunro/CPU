@@ -97,6 +97,8 @@ elem_t Pop(Stack* stack)
 {
     ASSERTHARD(stack);
 
+    if (stack->size == 0) return 0;
+
     if (stack->capacity >= 2 * (stack->size + 1))
       {
         stack->capacity /= 2;

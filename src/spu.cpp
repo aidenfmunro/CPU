@@ -16,6 +16,7 @@ ErrorCode RunProgram(const char* filename)
     CreateSPU(&spu, filename);
 
     size_t curPosition = 0;
+    Push(&spu.calls, 0);
 
     for (size_t i = 0;;i++)
       {

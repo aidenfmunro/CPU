@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <math.h>
 #include "textfuncs.h"
 
 bool isPointerValid(void *ptr) 
@@ -22,4 +23,11 @@ int StringIsEmpty(const Line* line)
         if (!isspace(line->string[i]))
             return 0;
     return 1;
+}
+
+#define EPS 1e-5
+
+bool doubleCompare(double a, double b)
+{
+    return fabs(a - b) < EPS;
 }

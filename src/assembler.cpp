@@ -19,6 +19,7 @@
 
 const uint32_t POSITION_SHIFT = 8;
 
+
 ErrorCode Compile(const char* filename, const char* listingFileName)
 {
     Text assemblyText = {};
@@ -47,7 +48,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
         for (size_t i = 0; i < labels.count; i++)
           {
-            WRITE_LISTING(fprintf(listingFile, "\t\t%8s\t0x%08lX\t(%ld)\n", labels.label[i].name, labels.label[i].address * SHIFT * 2, labels.label[i].address));
+            WRITE_LISTING(fprintf(listingFile, "\t\t%8s\t0x%08lX\n", labels.label[i].name, labels.label[i].address));
           }
 
         WRITE_LISTING(fprintf(listingFile, "\n%5s%14s%17s%8s%11s\n",
@@ -82,7 +83,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
 
     if (findLabel(labels, labelName) == LABEL_NOT_FOUND)
       {
-        labels->label[labels->count].address = *curPosition - 1; // !!!
+        labels->label[labels->count].address = *curPosition; // !!!
 
         memcpy(labels->label[labels->count++].name, labelName, strlen(labelName));
 
@@ -146,35 +147,46 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
         {                                                                                                                   \
-          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%016lX] %4s", *curPosition, "", *curPosition * SHIFT * 2, command));\
-          ASSIGN_CMD_ARGS(parseArgument(listingFile, curLine + commandLength + 1,                                           \
+          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%016lX] %4s", *curPosition, "", *curPosition, command));           \
+          ArgRes arg = parseArgument(listingFile, curLine + commandLength + 1,                                              \
                                                         curPosition,                                                        \
                                                            bytecode,                                                        \
                                                              labels,                                                        \
-                                                              runNum));                                                     \
+                                                              runNum);                                                      \
+          *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
+          *(bytecode + *curPosition) |= arg.argType;                                                                        \
+          *curPosition += sizeof(char);                                                                                     \
                                                                                                                             \
-          if (runNum == 1)                                                                                                  \
-              ASSIGN_CMD_ARGS(CMD_ ## name);                                                                                \
-                                                                                                                            \
-          *curPosition += 1;                                                                                                \
+          if (argc)                                                                                                         \
+            {                                                                                                               \
+              if (arg.argType & ARG_FORMAT_REG)                                                                             \
+                {                                                                                                           \
+                  memcpy(bytecode + *curPosition, &arg.regNum, sizeof(char));                                               \
+                  *curPosition += sizeof(char);                                                                             \
+                }                                                                                                           \
+              if (arg.argType & ARG_FORMAT_IMMED)                                                                           \
+                {                                                                                                           \  
+                  memcpy(bytecode + *curPosition, &arg.immed, sizeof(double));                                              \
+                  *curPosition += sizeof(double);                                                                           \
+                }                                                                                                           \
+            }                                                                                                               \
+             WRITE_LISTING(fprintf(listingFile, "\n"));                                                                     \
         }                                                            
         
     #include "commands.h"
 
-    #undef DEF_COMMAND
+    #undef DEF_COMMAND    
 
     return OK;                        
 }
 
-byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
+ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
-    CheckPointerValidation(argument);
-    CheckPointerValidation(bytecode);
-    CheckPointerValidation(labels);
-
-    char result  = 0; // TODO: change result name
+    ArgRes arg = {};
 
     int check    = 0;
+
+    arg.argType = 0;
 
     char* openBracketPtr  = strchr(argument, '[');
     char* closeBracketPtr = strchr(argument, ']');
@@ -182,20 +194,18 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
     if (openBracketPtr && closeBracketPtr)
       {
         argument = closeBracketPtr + 1;
-        if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_RAM);
+        arg.argType |= ARG_FORMAT_RAM;
       }
 
     char regArg = 0;
 
     if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
       {
-        ADD_CMD_FLAGS(ARG_FORMAT_REG);
-
         char regNum = regArg - 'a';
 
-        ON_DEBUG(printf(" %c", regNum));
+        arg.argType |= ARG_FORMAT_REG; arg.regNum = regNum;
 
-        if (runNum == 1) ASSIGN_CMD_ARG(regNum, char, sizeof(char));
+        ON_DEBUG(printf(" %c", regNum));
 
         argument += check;
       }
@@ -219,10 +229,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
         if (check != 0)
           {
             WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", value));
-
-            if (runNum == 1) ADD_CMD_FLAGS(ARG_FORMAT_IMMED);
-            if (runNum == 1) ASSIGN_CMD_ARG(value, elem_t, sizeof(elem_t));
-
+            arg.argType |= ARG_FORMAT_IMMED; arg.immed = value;
           }
         else
           {
@@ -232,7 +239,7 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
 
     check = 0;
     
-    if (result == 0)
+    if (arg.argType == 0)
       {
         char labelName[MAX_LABELNAME_LENGTH] = "";
 
@@ -244,13 +251,11 @@ byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte*
           {
             ON_DEBUG(printf("label address: %ld\n", labelAddress));
 
-            if (runNum == 2) ASSIGN_CMD_ARG(labelAddress, size_t, sizeof(size_t));
+            arg.argType |= ARG_FORMAT_IMMED; arg.immed = labelAddress;
 
             WRITE_LISTING(fprintf(listingFile, "%5s%ld", "", labelAddress));
           }
       }
-    
-    WRITE_LISTING(fprintf(listingFile, "\n"));
 
-    return result;
+    return arg;
 }

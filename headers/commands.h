@@ -106,34 +106,34 @@ DEF_COMMAND(HLT, 12, 0,
         return EXIT_CODE; 
     })
 
-DEF_COMMAND(JMP, 13, 0,
+DEF_COMMAND(JMP, 13, 1,
     {
       *curPosition = labelAddress;
     })
 
-DEF_COMMAND(JNE, 14, 0,
+DEF_COMMAND(JNE, 14, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
 
-      if (a != b)
+      if (!doubleCompare(a, b))
         {
           *curPosition = labelAddress;
         }
     })
 
-DEF_COMMAND(JE, 15, 0,
+DEF_COMMAND(JE, 15, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
 
-      if (a == b) // double values comparisson 
+      if (doubleCompare(a, b)) // double values comparisson 
         {
           *curPosition = labelAddress;
         }
     })
 
-DEF_COMMAND(JBE, 16, 0,
+DEF_COMMAND(JBE, 16, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
@@ -144,7 +144,7 @@ DEF_COMMAND(JBE, 16, 0,
         }
     })
 
-DEF_COMMAND(JB, 17, 0,
+DEF_COMMAND(JB, 17, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
@@ -155,7 +155,7 @@ DEF_COMMAND(JB, 17, 0,
         }
     })
 
-DEF_COMMAND(JAE, 18, 0,
+DEF_COMMAND(JAE, 18, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
@@ -166,7 +166,7 @@ DEF_COMMAND(JAE, 18, 0,
         }
     })
 
-DEF_COMMAND(JA, 19, 0,
+DEF_COMMAND(JA, 19, 1,
     {
       elem_t b = POP();
       elem_t a = POP();
@@ -177,7 +177,7 @@ DEF_COMMAND(JA, 19, 0,
         }
     })
 
-DEF_COMMAND(CALL, 20, 0,
+DEF_COMMAND(CALL, 20, 1,
     {
       PUSHC(*curPosition);
       

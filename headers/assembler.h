@@ -21,6 +21,13 @@ struct Labels
     Label* label;
 };
 
+struct ArgRes
+{
+  char argType;
+  char regNum;
+
+  double immed;
+};
 
 const int SHIFT = 8;
 
@@ -42,7 +49,7 @@ bool labelIsInitialized(Labels* labels, const char* labelName);
 
 ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
-byte parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
+ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
 
 RegNum getRegisterNum(const char argument);
 

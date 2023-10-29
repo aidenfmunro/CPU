@@ -34,6 +34,8 @@ int StringIsEmpty(const Line* line);
 #define myClose(fileVar) \
         fclose(fileVar);
 
+bool doubleCompare(double a, double b);
+
 
 
                     

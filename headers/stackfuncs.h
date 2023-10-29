@@ -115,7 +115,8 @@ enum STACK_ERRORS
     CANARY_SIZE_CHANGED     = (1 << 7),
     MAX_CAPACITY_OVERFLOW   = (1 << 8),
     CAPACITY_LESS_DEFAULT   = (1 << 9),
-    HASH_CHANGED            = (1 << 10)
+    HASH_CHANGED            = (1 << 10),
+    STACK_EMPTY             = (1 << 11)
 };
 
 struct Stack
