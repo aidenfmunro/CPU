@@ -19,7 +19,6 @@
 
 const uint32_t POSITION_SHIFT = 8;
 
-
 ErrorCode Compile(const char* filename, const char* listingFileName)
 {
     Text assemblyText = {};
@@ -247,11 +246,14 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
         size_t labelAddress = findLabel(labels, labelName);
 
-        if (check != 0 && labelAddress != LABEL_NOT_FOUND)
+        if (check != 0) // labelAddress
           {
             ON_DEBUG(printf("label address: %ld\n", labelAddress));
 
-            arg.argType |= ARG_FORMAT_IMMED; arg.immed = labelAddress;
+            arg.argType |= ARG_FORMAT_IMMED; 
+            
+            if (labelAddress != LABEL_NOT_FOUND)
+                memcpy(&arg.immed, &labelAddress, sizeof(size_t));
 
             WRITE_LISTING(fprintf(listingFile, "%5s%ld", "", labelAddress));
           }
