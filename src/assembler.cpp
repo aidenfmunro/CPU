@@ -7,12 +7,6 @@
 #include "utils.h"
 #include "spuconfig.h"
 
-#define ADD_CMD_FLAGS(flag) result |= (flag);
-
-#define ASSIGN_CMD_ARGS(args) *(bytecode + *curPosition * 16) |= (args) 
-
-#define ASSIGN_CMD_ARG(arg, type, shift) *(type*)(bytecode + shift + *curPosition * 16) = (arg)
-
 #define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
 #define WRITE_LISTING(...) if (runNum == 2) __VA_ARGS__
