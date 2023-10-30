@@ -18,7 +18,14 @@ enum ERRORS
     INVALID_PTR         = 11,
     INCORRECT_SYNTAX    = 13,
     REPEATING_LABEL     = 15,
+    SYNTAX_ERROR        = 17,
     NON_EXIST_REGISTER  = '0'
 };
+
+const char ARG_FORMAT_IMMED = (1 << 5);
+
+const char ARG_FORMAT_REG = (1 << 6);
+
+const unsigned char ARG_FORMAT_RAM = (1 << 7);
 
 #endif

@@ -1,0 +1,91 @@
+push 5
+pop [509] ; Radius
+
+push 10
+pop [510] ; X size
+
+push 10
+pop [511] ; Y size
+
+push 0
+pop rax ; get the cur rad
+
+push 0
+pop rbx ; counter
+
+push 0
+pop rcx ; x 
+
+push 0
+pop rdx ; y
+
+call col
+hlt
+
+    col:
+        push [511]
+        push rdx
+        jae row
+        ret
+
+    row:
+        push [510]
+        push rcx
+        call getRad
+
+        call draw
+        
+        push rcx
+        push 1
+        add
+        pop rcx
+
+        jb row
+
+        push rdx
+        push 1
+        add
+        pop rdx
+
+        jmp col
+
+draw:
+    push rax
+    push [509]
+    jae back
+
+    push rcx
+    push rdx
+    add
+
+    push 1
+    
+    pop [rbx]
+    ret
+
+
+back:
+    ret
+
+getRad:
+    push rcx
+    push [510]
+    sub
+    push rcx
+    push [510]
+    sub
+    mul
+    push rdx
+    push [511]
+    sub
+    push rdx
+    push [511]
+    sub
+    mul
+    add
+    sqrt
+    pop rax
+
+    ret
+
+

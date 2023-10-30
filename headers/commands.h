@@ -10,11 +10,11 @@ DEF_COMMAND(PUSH, 1, 1,
         }
       else if (isArgRam && isArgReg)
         {
-          PUSH(*(elem_t*)spu->RAM[size_t(spu->regs[registerNum])]);
+          PUSH(spu->RAM[size_t(spu->regs[registerNum])]);
         }
       else if (isArgIm && isArgReg && isArgRam)
         {
-          PUSH(*(elem_t*)spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
+          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
         }
       else if (isArgIm)
         {
@@ -30,15 +30,15 @@ DEF_COMMAND(POP, 2, 1,
         }
       else if (isArgReg && isArgRam)
         {
-          *(elem_t*)spu->RAM[size_t(spu->regs[registerNum])] = POP();
+          spu->RAM[size_t(spu->regs[registerNum])] = POP();
         }
       else if (isArgReg && isArgRam && isArgIm)
         {
-          *(elem_t*)spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
+          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
         }
       else if (isArgRam && isArgIm)
         {
-          *(elem_t*)spu->RAM[size_t(value)] = POP();
+          spu->RAM[size_t(value)] = POP();
         }
       else if (isArgReg)
         { 
@@ -57,7 +57,7 @@ DEF_COMMAND(IN, 3, 0,
         }
       else if (isArgRam)
         {
-          *(elem_t*)spu->RAM[size_t(value)] = POP();
+          spu->RAM[size_t(value)] = POP();
         }
     })
 

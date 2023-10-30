@@ -5,7 +5,7 @@
 #include "textfuncs.h"
 #include "stackfuncs.h"
 #include "spuconfig.h"
-#include "assembler.h"
+#include "config.h"
 #include "utils.h"
 #include "dsl.h"
 
@@ -20,11 +20,28 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) {PrintStack(&spu.stack);}
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
         else {break;}
       }
 
-    stackDump(&spu.calls, "log.txt", 26, "run");
+    printf("%lg ", spu.RAM[511]);
+
+    for (size_t x = 0; x <= 11; x++)
+      {
+        for (size_t y = 0; y <= 11; y++)
+          {
+            printf("%lg ", spu.RAM[x + y]);
+            if (doubleCompare(spu.RAM[x + y], 1))
+              {
+                printf("#");
+              }
+            else
+              {
+                printf("*");
+              }
+          }
+        printf("\n");
+      }
 
     DestroySPU(&spu);  
 
@@ -79,18 +96,14 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
     CheckPointerValidation(spu);
     
     char instruction                    = *(spu->code + *curPosition);               // TODO: if statements for immed and reg optimize
-    printf("%d ", instruction);
-
     bool isArgReg                       = instruction & ARG_FORMAT_REG;
     bool isArgIm                        = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
     bool isArgRam                       = instruction & ARG_FORMAT_RAM;
     char commandCode                    = instruction & ARG_FORMAT_CMD;
-    char registerNum = 0;
-    elem_t value = 0;                                                   
-
-
-    elem_t testval = 0;
-    size_t labelAddress = 0;
+    char registerNum                    = 0;
+    elem_t value                        = 0;                                                   
+    elem_t testval                      = 0;
+    size_t labelAddress                 = 0;
   
     switch (commandCode)
       {
@@ -110,7 +123,6 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                       memcpy(&value, spu->code + *curPosition, sizeof(double));     \
                       memcpy(&labelAddress, spu->code + *curPosition, sizeof(double));     \
                       *curPosition += sizeof(double);                               \
-                      printf("val/address = %ld\n", value);                         \
                     }                                                               \
                                                                                     \
                 }                                                                   \

@@ -60,6 +60,8 @@ noroots:
     hlt
 
 oneroot:
+    push 1
+    out
     push 0 
     push rbx
     sub

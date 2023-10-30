@@ -7,11 +7,41 @@
 #include "utils.h"
 #include "spuconfig.h"
 
+struct Label
+{
+    size_t address;
+    char name[MAX_LABELNAME_LENGTH];
+};
+
+struct Labels
+{
+    size_t count;
+    Label* label;
+};
+
+struct ArgRes
+{
+  char argType;
+  char regNum;
+
+  double immed;
+};
+
+size_t findLabel(Labels* labels, const char* labelName);
+
+bool labelIsInitialized(Labels* labels, const char* labelName);
+
+ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
+
+ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
+
+RegNum getRegisterNum(const char argument);
+
+ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
+
 #define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
 #define WRITE_LISTING(...) if (runNum == 2) __VA_ARGS__
-
-const uint32_t POSITION_SHIFT = 8;
 
 ErrorCode Compile(const char* filename, const char* listingFileName)
 {
@@ -37,7 +67,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
       {
         curPosition = 0;
 
-        WRITE_LISTING(fprintf(listingFile, "%s\nAuthor: Aiden Munro\nVersion: 2.0\n\nAll labels:\n\n", getTime()));
+        WRITE_LISTING(fprintf(listingFile, "%s\nAuthor: Aiden Munro\nVersion: 2.5\n\nAll labels:\n\n", getTime()));
 
         for (size_t i = 0; i < labels.count; i++)
           {
@@ -147,10 +177,10 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                                                              labels,                                                        \
                                                               runNum);                                                      \
           *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
-          if (argc)   \
-            { \
+          if (argc)                                                                                                         \
+            {                                                                                                               \
           *(bytecode + *curPosition) |= arg.argType;                                                                        \
-            } \
+            }                                                                                                               \
           *curPosition += sizeof(char);                                                                                     \
           if (argc)                                                                                                         \
             {                                                                                                               \   
@@ -166,9 +196,12 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                 }                                                                                                           \
             }                                                                                                               \
              WRITE_LISTING(fprintf(listingFile, "\n"));                                                                     \
-        }                                                            
+        }                                                                                                                   \                                                        
         
     #include "commands.h"
+
+        else
+          return SYNTAX_ERROR;
 
     #undef DEF_COMMAND    
 

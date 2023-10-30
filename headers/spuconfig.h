@@ -8,7 +8,7 @@ typedef char byte;
 
 const int nREGS = 4;
 
-const int nSLOTS = 256;
+const int nSLOTS = 512;
 
 const int EXIT_CODE = -1;
 
@@ -33,7 +33,7 @@ struct SPU
 
     elem_t regs[nREGS];
 
-    char* RAM[nSLOTS];
+    elem_t RAM[nSLOTS];
     
     byte* code;
 };
