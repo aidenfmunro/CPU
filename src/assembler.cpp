@@ -147,11 +147,13 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                                                              labels,                                                        \
                                                               runNum);                                                      \
           *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
+          if (argc)   \
+            { \
           *(bytecode + *curPosition) |= arg.argType;                                                                        \
+            } \
           *curPosition += sizeof(char);                                                                                     \
-                                                                                                                            \
           if (argc)                                                                                                         \
-            {                                                                                                               \
+            {                                                                                                               \   
               if (arg.argType & ARG_FORMAT_REG)                                                                             \
                 {                                                                                                           \
                   memcpy(bytecode + *curPosition, &arg.regNum, sizeof(char));                                               \
@@ -238,9 +240,11 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
         sscanf(argument, "%s%n", labelName, &check);
 
+        printf("%d\n", check);
+
         size_t labelAddress = findLabel(labels, labelName);
 
-        if (check != 0) // labelAddress
+        if (check != 0) // if no labels still add argument!!!
           {
             ON_DEBUG(printf("label address: %ld\n", labelAddress));
 

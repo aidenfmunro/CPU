@@ -179,12 +179,12 @@ DEF_COMMAND(JA, 19, 1,
 
 DEF_COMMAND(CALL, 20, 1,
     {
-      PUSHC(*curPosition);
+      PUSHC(*curPosition + sizeof(double) + sizeof(char));
       
       *curPosition = labelAddress;
     })
 
 DEF_COMMAND(RET, 21, 0,
     {
-      *curPosition = size_t(POPC());
+      *curPosition = POPC();
     })

@@ -20,7 +20,7 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) {curPosition += 1; ON_DEBUG(PrintStack(&spu.calls); PrintStack(&spu.stack);)}
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) {ON_DEBUG(PrintStack(&spu.calls); PrintStack(&spu.stack);)}
         else {break;}
       }
 
@@ -74,68 +74,57 @@ ErrorCode DestroySPU(SPU* spu)
     return OK;
 }
 
-size_t getLabelAddress(const size_t curPosition, const byte* bytecode)
-{
-    CheckPointerValidation(bytecode + (2 * curPosition + 1) * SHIFT);
-
-    return *(size_t*)(bytecode + (2 * curPosition + 1) * SHIFT);
-}
-
-elem_t getValue(const size_t curPosition, const byte* bytecode)
-{ 
-    CheckPointerValidation(bytecode + (2 * curPosition + 1) * SHIFT);  
-
-    return *(elem_t*)(bytecode + (2 * curPosition + 1) * SHIFT);
-}
-
-byte getRegisterNum(const size_t curPosition, const byte* bytecode)
-{
-    CheckPointerValidation(bytecode + 2 * curPosition * SHIFT + 1);
-
-    return *(byte*)(bytecode + 2 * curPosition * SHIFT + 1);
-}
-
-byte getCommandArgs(const size_t curPosition, const byte* bytecode)
-{
-    CheckPointerValidation(bytecode + 2 * curPosition * SHIFT);
-
-    return *(byte*)(bytecode + 2 * curPosition * SHIFT);
-}
-
 ErrorCode execCommand(SPU* spu, size_t* curPosition)
 {    
     CheckPointerValidation(spu);
     
-    char instruction        = getCommandArgs(*curPosition, spu->code);               // TODO: if statements for immed and reg optimize
+    char instruction                    = *(spu->code + *curPosition);               // TODO: if statements for immed and reg optimize
+    printf("%d ", instruction);
 
-    char registerNum        = getRegisterNum(*curPosition, spu->code);
+    bool isArgReg                       = instruction & ARG_FORMAT_REG;
+    bool isArgIm                        = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
+    bool isArgRam                       = instruction & ARG_FORMAT_RAM;
+    char commandCode                    = instruction & ARG_FORMAT_CMD;
+    char registerNum = 0;
+    elem_t value = 0;                                                   
 
-    elem_t value            = getValue(*curPosition, spu->code);
 
-    size_t labelAddress     = getLabelAddress(*curPosition, spu->code);
-
-    bool isArgReg           = instruction & ARG_FORMAT_REG;
-    bool isArgIm            = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
-    bool isArgRam           = instruction & ARG_FORMAT_RAM;
-    char commandCode        = instruction & ARG_FORMAT_CMD;                                // TODO: make const 0x0F
-                                                                          // printf("command code = %d; ", commandCode);
-                                                                          // printf("value = %lg\n", value); 
-                                                                          // TODO: seperate macro for log
-
-    printf("cmd: %d, reg: %d, val: %lg, ln: %ld\n", commandCode, registerNum, value, labelAddress);
-
+    elem_t testval = 0;
+    size_t labelAddress = 0;
+  
     switch (commandCode)
       {
-        #define DEF_COMMAND(name, number, argc, code) case CMD_ ## name: code break;  
+        #define DEF_COMMAND(name, number, argc, cde)                                \
+                                                                                    \
+            case number:                                                            \
+              *curPosition += sizeof(char);                                         \
+              if (argc)                                                             \
+                {                                                                   \
+                  if (isArgReg)                                                     \
+                    {                                                               \  
+                      memcpy(&registerNum, spu->code + *curPosition, sizeof(char)); \
+                      *curPosition += sizeof(char);                                 \
+                    }                                                               \
+                  if (isArgIm)                                                      \
+                    {                                                               \
+                      memcpy(&value, spu->code + *curPosition, sizeof(double));     \
+                      memcpy(&labelAddress, spu->code + *curPosition, sizeof(double));     \
+                      *curPosition += sizeof(double);                               \
+                      printf("val/address = %ld\n", value);                         \
+                    }                                                               \
+                                                                                    \
+                }                                                                   \
+                cde                                                                 \
+                break;                                                              \
 
-        #include "commands.h"
+            #include "commands.h"
 
-        #undef DEF_COMMAND
+            default:
+                printf("Unknown command, code: %X \n", commandCode);
+                return EXIT_CODE;
         
-        default:
-            printf("Unknown command, code: %X \n", commandCode);
-            return EXIT_CODE;
-      } 
+        #undef DEF_COMMAND
+      }
 
     return OK;   
 }

@@ -46,12 +46,4 @@ ErrorCode RunProgram(const char* filename);
 
 ErrorCode execCommand(SPU* spu, size_t* position);
 
-size_t getLabelAddress(const size_t position, const byte* bytecode);
-
-elem_t getValue(const size_t position, const byte* bytecode);
-
-byte getRegisterNum(const size_t position, const byte* bytecode);
-
-byte getCommandArgs(const size_t position, const byte* bytecode);
-
 #endif

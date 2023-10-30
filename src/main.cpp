@@ -7,7 +7,7 @@ int main(void)
 {
     Compile("qequation.txt", "listing.txt");
 
-    // RunProgram("code.bin");
+    RunProgram("code.bin");
 
     
 }
