@@ -19,29 +19,24 @@ ErrorCode RunProgram(const char* filename)
     size_t curPosition = 0;
 
     while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
-
-    printf("%lg\n", spu.RAM[11]);
-
     
     //-----------------------------------------------------
-    //printf("%lg ", spu.RAM[511]);
-    //
-    //for (size_t x = 0; x <= 11; x++)
-    //  {
-    //    for (size_t y = 0; y <= 11; y++)
-    //      {
-    //        printf("%lg ", spu.RAM[x + y]);
-    //        if (doubleCompare(spu.RAM[x + y], 1))
-    //          {
-    //            printf("#");
-    //          }
-    //        else
-    //          {
-    //            printf("*");
-    //          }
-    //      }
-    //    printf("\n");
-    //  }
+    for (size_t y = 0; y <= 10; y++)
+      {
+        for (size_t x = 0; x <= 10; x++)
+          {
+            if (doubleCompare(spu.RAM[11 * y + x], 1))
+              {
+                printf("#");
+              }
+            else
+              {
+                printf("*");
+              }
+          }
+        printf("\n");
+      }
+        printf("\n");
     //------------------------------------------------------
 
     DestroySPU(&spu);  
@@ -108,7 +103,6 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
     elem_t value                        = 0;                                                   
     elem_t testval                      = 0;
     size_t labelAddress                 = 0;
-
   
     switch (commandCode)
       {
