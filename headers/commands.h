@@ -179,7 +179,7 @@ DEF_COMMAND(JA, 19, 1,
 
 DEF_COMMAND(CALL, 20, 1,
     {
-      PUSHC(*curPosition + sizeof(double) + sizeof(char));
+      PUSHC(*curPosition);
       
       *curPosition = labelAddress;
     })
@@ -187,4 +187,5 @@ DEF_COMMAND(CALL, 20, 1,
 DEF_COMMAND(RET, 21, 0,
     {
       *curPosition = POPC();
+      printf("!!!!!!!!!!!!!! %ld\n", *curPosition);
     })

@@ -240,8 +240,6 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
         sscanf(argument, "%s%n", labelName, &check);
 
-        printf("%d\n", check);
-
         size_t labelAddress = findLabel(labels, labelName);
 
         if (check != 0) // if no labels still add argument!!!

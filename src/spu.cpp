@@ -20,7 +20,7 @@ ErrorCode RunProgram(const char* filename)
 
     for (size_t i = 0;;i++)
       {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) {ON_DEBUG(PrintStack(&spu.calls); PrintStack(&spu.stack);)}
+        if (execCommand(&spu, &curPosition) != EXIT_CODE) {PrintStack(&spu.stack);}
         else {break;}
       }
 
@@ -120,7 +120,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
             #include "commands.h"
 
             default:
-                printf("Unknown command, code: %X \n", commandCode);
+                printf("Unknown command, code: %X, line: %ld\n", commandCode, *curPosition);
                 return EXIT_CODE;
         
         #undef DEF_COMMAND
