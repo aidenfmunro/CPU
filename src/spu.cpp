@@ -1,13 +1,14 @@
-
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "textfuncs.h"
 #include "stackfuncs.h"
 #include "spuconfig.h"
 #include "config.h"
 #include "utils.h"
 #include "dsl.h"
+
+ErrorCode execCommand(SPU* spu, size_t* position);
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -16,32 +17,30 @@ ErrorCode RunProgram(const char* filename)
     CreateSPU(&spu, filename);
 
     size_t curPosition = 0;
-    Push(&spu.calls, 0);
 
-    for (size_t i = 0;;i++)
-      {
-        if (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
-        else {break;}
-      }
+    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
 
-    printf("%lg ", spu.RAM[511]);
 
-    for (size_t x = 0; x <= 11; x++)
-      {
-        for (size_t y = 0; y <= 11; y++)
-          {
-            printf("%lg ", spu.RAM[x + y]);
-            if (doubleCompare(spu.RAM[x + y], 1))
-              {
-                printf("#");
-              }
-            else
-              {
-                printf("*");
-              }
-          }
-        printf("\n");
-      }
+    //-----------------------------------------------------
+    //printf("%lg ", spu.RAM[511]);
+    //
+    //for (size_t x = 0; x <= 11; x++)
+    //  {
+    //    for (size_t y = 0; y <= 11; y++)
+    //      {
+    //        printf("%lg ", spu.RAM[x + y]);
+    //        if (doubleCompare(spu.RAM[x + y], 1))
+    //          {
+    //            printf("#");
+    //          }
+    //        else
+    //          {
+    //            printf("*");
+    //          }
+    //      }
+    //    printf("\n");
+    //  }
+    //------------------------------------------------------
 
     DestroySPU(&spu);  
 
@@ -52,12 +51,11 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 {
     size_t fileSize = getSize(filename);
     
-    byte* temp = (byte*)calloc(sizeof(byte), fileSize);// TODO: rename variable
+    byte* tempcode = (byte*)calloc(sizeof(byte), fileSize);// TODO: rename variable
 
-    if (temp == NULL)
-        return NO_MEMORY;
+    CheckPointerValidation(tempcode);
 
-    spu->code = temp;
+    spu->code = tempcode;
 
     Stack stack = {};
 
@@ -75,7 +73,7 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 
     myRead(spu->code, sizeof(byte), fileSize, codebin);
 
-    myClose(codebin); //TODO: is fread successful? -> DONE
+    myClose(codebin);
 
     return OK;
 }
@@ -85,6 +83,10 @@ ErrorCode DestroySPU(SPU* spu)
     DestroyStack(&spu->stack);
 
     DestroyStack(&spu->calls);
+
+    memset(spu->RAM, 0, nSLOTS);
+
+    memset(spu->regs, 0, nREGS);
 
     free(spu->code);
 
@@ -110,7 +112,9 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
         #define DEF_COMMAND(name, number, argc, cde)                                \
                                                                                     \
             case number:                                                            \
+                                                                                    \
               *curPosition += sizeof(char);                                         \
+                                                                                    \
               if (argc)                                                             \
                 {                                                                   \
                   if (isArgReg)                                                     \
@@ -120,9 +124,9 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                     }                                                               \
                   if (isArgIm)                                                      \
                     {                                                               \
-                      memcpy(&value, spu->code + *curPosition, sizeof(double));     \
+                      memcpy(&value, spu->code + *curPosition, sizeof(double));            \
                       memcpy(&labelAddress, spu->code + *curPosition, sizeof(double));     \
-                      *curPosition += sizeof(double);                               \
+                      *curPosition += sizeof(double);                                      \
                     }                                                               \
                                                                                     \
                 }                                                                   \

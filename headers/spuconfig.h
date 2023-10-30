@@ -16,15 +16,6 @@ const int BYTES_PER_COMMAND = 16;
 
 const char ARG_FORMAT_CMD = 0x1F;
 
-enum Command
-{
-    #define DEF_COMMAND(name, num, argc, code) CMD_ ## name = num,
-
-    #include "commands.h"
-
-    #undef DEF_COMMAND
-};
-
 struct SPU
 {
     Stack stack;
@@ -43,7 +34,5 @@ ErrorCode CreateSPU(SPU* spu, const char* filename);
 ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode RunProgram(const char* filename);
-
-ErrorCode execCommand(SPU* spu, size_t* position);
 
 #endif

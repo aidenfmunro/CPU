@@ -5,7 +5,7 @@
 #include "config.h"
 #include "textfuncs.h"
 #include "utils.h"
-#include "spuconfig.h"
+#include "enum.h"
 
 struct Label
 {
@@ -63,6 +63,8 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
     size_t curPosition = 0;
 
+    int error = OK;
+
     for (size_t runNum = 1; runNum < 3; runNum++) // TODO: change runnum to 2
       {
         curPosition = 0;
@@ -78,7 +80,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
                                            "Line:", "Address:", "Cmd:", "Reg:", "Value:"));
 
         for (size_t index = 0; index < numLines; index++)
-            proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum); 
+            error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum); 
       }  
     
     myOpen("code.bin", "wb", codebin);
@@ -91,7 +93,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
     freeEverything;
 
-    return OK;
+    return error;
 }
 
 const size_t LABEL_NOT_FOUND = -1;
@@ -106,7 +108,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
 
     if (findLabel(labels, labelName) == LABEL_NOT_FOUND)
       {
-        labels->label[labels->count].address = *curPosition; // !!!
+        labels->label[labels->count].address = *curPosition;
 
         memcpy(labels->label[labels->count++].name, labelName, strlen(labelName));
 
@@ -165,8 +167,6 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
 
-    ON_DEBUG(printf("command: %s\n", command));
-
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
         {                                                                                                                   \
@@ -201,7 +201,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     #include "commands.h"
 
         else
-          return SYNTAX_ERROR;
+          return INCORRECT_SYNTAX;
 
     #undef DEF_COMMAND    
 
@@ -239,8 +239,7 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       }
     else
       {
-        check = 0;
-        regArg = 0;
+        check = 0; regArg = 0;
       }
     
     if (regArg != 0) {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));} else {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}

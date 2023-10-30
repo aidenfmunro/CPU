@@ -187,5 +187,4 @@ DEF_COMMAND(CALL, 20, 1,
 DEF_COMMAND(RET, 21, 0,
     {
       *curPosition = POPC();
-      printf("!!!!!!!!!!!!!! %ld\n", *curPosition);
     })
