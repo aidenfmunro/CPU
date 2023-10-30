@@ -179,11 +179,11 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
           *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
           if (argc)                                                                                                         \
             {                                                                                                               \
-          *(bytecode + *curPosition) |= arg.argType;                                                                        \
+              *(bytecode + *curPosition) |= arg.argType;                                                                    \
             }                                                                                                               \
           *curPosition += sizeof(char);                                                                                     \
           if (argc)                                                                                                         \
-            {                                                                                                               \   
+            {                                                                                                               \
               if (arg.argType & ARG_FORMAT_REG)                                                                             \
                 {                                                                                                           \
                   memcpy(bytecode + *curPosition, &arg.regNum, sizeof(char));                                               \
@@ -221,7 +221,7 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
     if (openBracketPtr && closeBracketPtr)
       {
-        argument = closeBracketPtr + 1;
+        argument = openBracketPtr + 1;
         arg.argType |= ARG_FORMAT_RAM;
       }
 

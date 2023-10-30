@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    Compile("qequation.txt", "listing.txt");
+    Compile("circle.txt", "listing.txt");
 
     RunProgram("code.bin");
 }

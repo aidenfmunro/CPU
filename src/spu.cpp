@@ -20,7 +20,9 @@ ErrorCode RunProgram(const char* filename)
 
     while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
 
+    printf("%lg\n", spu.RAM[11]);
 
+    
     //-----------------------------------------------------
     //printf("%lg ", spu.RAM[511]);
     //
@@ -106,6 +108,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
     elem_t value                        = 0;                                                   
     elem_t testval                      = 0;
     size_t labelAddress                 = 0;
+
   
     switch (commandCode)
       {
