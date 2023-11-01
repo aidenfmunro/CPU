@@ -1,7 +1,8 @@
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
 
-#include "spuconfig.h"
+#include <inttypes.h>
+#include "config.h"
 
 const uint32_t MAX_LABELNAME_LENGTH = 16;
 

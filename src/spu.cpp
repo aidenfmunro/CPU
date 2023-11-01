@@ -3,10 +3,27 @@
 #include <string.h>
 #include "textfuncs.h"
 #include "stackfuncs.h"
-#include "spuconfig.h"
+#include "spu.h"
 #include "config.h"
 #include "utils.h"
 #include "dsl.h"
+
+struct SPU
+{
+    Stack stack;
+
+    Stack calls;
+
+    elem_t regs[nREGS];
+
+    elem_t RAM[nSLOTS];
+    
+    byte* code;
+};
+
+ErrorCode CreateSPU(SPU* spu, const char* filename);
+
+ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode execCommand(SPU* spu, size_t* position);
 
@@ -48,7 +65,7 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 {
     size_t fileSize = getSize(filename);
     
-    byte* tempcode = (byte*)calloc(sizeof(byte), fileSize);// TODO: rename variable
+    byte* tempcode = (byte*)calloc(sizeof(byte), fileSize);
 
     CheckPointerValidation(tempcode);
 
@@ -96,12 +113,11 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
     
     char instruction                    = *(spu->code + *curPosition);               // TODO: if statements for immed and reg optimize
     bool isArgReg                       = instruction & ARG_FORMAT_REG;
-    bool isArgIm                        = instruction & ARG_FORMAT_IMMED;                    // TODO: change name to isArgReg
+    bool isArgIm                        = instruction & ARG_FORMAT_IMMED;                    
     bool isArgRam                       = instruction & ARG_FORMAT_RAM;
     char commandCode                    = instruction & ARG_FORMAT_CMD;
     char registerNum                    = 0;
     elem_t value                        = 0;                                                   
-    elem_t testval                      = 0;
     size_t labelAddress                 = 0;
   
     switch (commandCode)

@@ -4,6 +4,7 @@
 #include "assembler.h"
 #include "config.h"
 #include "textfuncs.h"
+#include "stackfuncs.h"
 #include "utils.h"
 #include "enum.h"
 
@@ -25,6 +26,8 @@ struct ArgRes
   char regNum;
 
   double immed;
+
+  ErrorCode error;
 };
 
 size_t findLabel(Labels* labels, const char* labelName);
@@ -38,6 +41,13 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 RegNum getRegisterNum(const char argument);
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
+
+ErrorCode parseReg(char* argument, ArgRes* arg);
+
+ErrorCode parseImmed(char* argument, ArgRes* arg);
+
+ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
+
 
 #define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
@@ -208,11 +218,11 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     return OK;                        
 }
 
+#define RETURN_ERROR(arg) if (arg.error != OK) return arg; 
+
 ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
     ArgRes arg = {};
-
-    int check    = 0;
 
     arg.argType = 0;
 
@@ -224,28 +234,15 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
         argument = openBracketPtr + 1;
         arg.argType |= ARG_FORMAT_RAM;
       }
-
-    char regArg = 0;
-
-    if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
+    else if (!(openBracketPtr || closeBracketPtr))
       {
-        char regNum = regArg - 'a';
-
-        arg.argType |= ARG_FORMAT_REG; 
-        
-        arg.regNum = regNum; 
-
-        ON_DEBUG(printf(" %c", regNum));
-
-        argument += check;
+        arg.error = SYNTAX_ERROR; // RETURN_ERROR(arg);
       }
-    else
-      {
-        check = 0; regArg = 0;
-      }
+
+    arg.error = parseReg(argument, &arg); // RETURN_ERROR(arg);
     
-    if (regArg != 0) 
-      {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));}
+    if ((arg.argType & ARG_FORMAT_REG) != 0) 
+      {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
     else 
       {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
@@ -254,26 +251,75 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
     if (plusPtr)
         argument = plusPtr + 1;
       
-    elem_t value = POISON;
+    arg.error = parseImmed(argument, &arg); // RETURN_ERROR(arg);
 
-    if (sscanf(argument, "%lg%n", &value, &check) == 1)
-      {
-        if (check != 0)
-          {
-            WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", value));
-            arg.argType |= ARG_FORMAT_IMMED; arg.immed = value;
-          }
-        else
-          {
-            WRITE_LISTING(fprintf(listingFile, "%5s----------", ""));
-          }
-      }
-
-    check = 0;
+    WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
     
     if (arg.argType == 0)
       {
-        char labelName[MAX_LABELNAME_LENGTH] = "";
+        arg.error = parseLabel(argument, &arg, labels, runNum); // RETURN_ERROR(arg);
+      }
+    return arg;
+}
+
+ErrorCode parseReg(char* argument, ArgRes* arg)
+{
+    char regArg = 0;
+
+    int check   = 0;
+
+    if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
+      {
+        char regNum = regArg - 'a';
+
+        arg->argType |= ARG_FORMAT_REG; 
+        
+        arg->regNum = regNum; 
+
+        argument += check;
+      }
+    else
+      {
+        if (regArg > 3)
+          {
+            return NON_EXIST_REGISTER;
+          }
+        else
+          {
+            return SYNTAX_ERROR;
+          }
+      }
+    
+    return OK;
+}
+
+ErrorCode parseImmed(char* argument, ArgRes* arg)
+{
+    elem_t value = POISON;
+
+    int check = 0;
+
+    if (sscanf(argument, "%lg%n", &value, &check) == 1)
+      {
+        if (check != 0 && !isnan(value))
+          {
+            arg->immed = value;
+            arg->argType |= ARG_FORMAT_IMMED;
+          }
+        else
+          {
+            return SYNTAX_ERROR; 
+          }
+      }
+
+    return OK;
+}
+
+ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
+{
+    int check = 0;
+
+    char labelName[MAX_LABELNAME_LENGTH] = "";
 
         sscanf(argument, "%s%n", labelName, &check);
 
@@ -281,16 +327,13 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
         if (check != 0) // if no labels still add argument!!!
           {
-            ON_DEBUG(printf("label address: %ld\n", labelAddress));
-
-            arg.argType |= ARG_FORMAT_IMMED; 
+            arg->argType |= ARG_FORMAT_IMMED; 
             
             if (labelAddress != LABEL_NOT_FOUND)
-                memcpy(&arg.immed, &labelAddress, sizeof(size_t));
+                memcpy(&arg->immed, &labelAddress, sizeof(size_t));
+            else if(labelAddress == LABEL_NOT_FOUND && runNum == 2)
+                return NON_EXIST_LABEL;
+          }    
 
-            WRITE_LISTING(fprintf(listingFile, "%5s%ld", "", labelAddress));
-          }
-      }
-
-    return arg;
+    return OK;
 }
