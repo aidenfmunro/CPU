@@ -22,23 +22,23 @@ struct Labels
 
 struct ArgRes
 {
-  char argType;
-  char regNum;
+    char argType;
 
-  double immed;
+    char regNum;
+    double immed;
 
-  ErrorCode error;
+    ErrorCode error;
 };
-
-size_t findLabel(Labels* labels, const char* labelName);
 
 bool labelIsInitialized(Labels* labels, const char* labelName);
 
-ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
+size_t findLabel(Labels* labels, const char* labelName);
+
+RegNum getRegisterNum(const char symbol);
 
 ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
 
-RegNum getRegisterNum(const char symbol);
+ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
@@ -50,8 +50,8 @@ ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
 
 ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
 
-#define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                     \
-                    fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1); \
+#define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                         \
+                    fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1);    \
                     myClose(log_compile);
 
 #define FREE_EVERYTHING DestroyText(&assemblyText); free(bytecode); free(labels.label)
@@ -182,10 +182,14 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     if (labelPtr)
       { 
         *labelPtr = '\0';
+
         if (runNum == 1)
           {
             proccessLabel(curLine, labels, curPosition);
           }
+        
+        *labelPtr = ':';
+
         return OK;
       }  
   
@@ -237,7 +241,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     #undef DEF_COMMAND
 
-    return OK;    
+    return INCORRECT_SYNTAX;    
 }
 
 #define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
