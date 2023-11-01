@@ -268,13 +268,11 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       }
     
     arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
-
-    printf("%d\n", arg.error);
     
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
-      {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
+        {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
     else 
-      {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
+        {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
     char* plusPtr = strchr(argument, '+');
 
@@ -390,5 +388,3 @@ RegNum getRegisterNum(const char symbol)
           return NON_EXIST_REGISTER;
       }
 }
-
-
