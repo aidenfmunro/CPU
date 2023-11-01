@@ -8,7 +8,7 @@ typedef char byte;
 
 const int nREGS = 4;
 
-const int nSLOTS = 512;
+const int nSLOTS = 2048;
 
 const int EXIT_CODE = -1;
 

@@ -25,7 +25,7 @@ hlt
     col:
         push 0
         pop rcx
-        push 20
+        push 40
         push rdx
 
         ja row
@@ -43,7 +43,7 @@ hlt
         ; out
 
         push rcx
-        push 10
+        push 40
 
         jb row
 
@@ -80,17 +80,17 @@ back:
 
 getRad:
     push rcx
-    push 2
+    push 20
     sub
     push rcx
-    push 2
+    push 20
     sub
     mul
     push rdx
-    push 2
+    push 20
     sub
     push rdx
-    push 2
+    push 20
     sub
     mul
     add

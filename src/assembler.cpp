@@ -59,17 +59,17 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
     CheckPointerValidation(bytecode); // TODO: mycalloc to check for return value
 
-    myOpen("listing.txt", "w", listingFile);
+    myOpen(listingFileName, "w", listingFile);
 
     size_t curPosition = 0;
 
     int error = OK;
 
-    for (size_t runNum = 1; runNum < 3; runNum++) // TODO: change runnum to 2
+    for (size_t runNum = 1; runNum < 3; runNum++)
       {
         curPosition = 0;
 
-        WRITE_LISTING(fprintf(listingFile, "%s\nAuthor: Aiden Munro\nVersion: 2.5\n\nAll labels:\n\n", getTime()));
+        WRITE_LISTING(fprintf(listingFile, "%s\nAuthor: Aiden Munro\nVersion: 2.5\n\nAll labels:\n\n", getTime())); // TODO: split into two lines
 
         for (size_t i = 0; i < labels.count; i++)
           {
@@ -231,7 +231,9 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       {
         char regNum = regArg - 'a';
 
-        arg.argType |= ARG_FORMAT_REG; arg.regNum = regNum;
+        arg.argType |= ARG_FORMAT_REG; 
+        
+        arg.regNum = regNum; 
 
         ON_DEBUG(printf(" %c", regNum));
 
@@ -242,7 +244,10 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
         check = 0; regArg = 0;
       }
     
-    if (regArg != 0) {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));} else {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
+    if (regArg != 0) 
+      {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", regArg));}
+    else 
+      {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
     char* plusPtr = strchr(argument, '+');
 

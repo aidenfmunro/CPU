@@ -21,17 +21,17 @@ ErrorCode RunProgram(const char* filename)
     while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
     
     //-----------------------------------------------------
-    for (size_t y = 0; y <= 10; y++)
+    for (size_t y = 0; y <= 40; y++) // hardcode
       {
-        for (size_t x = 0; x <= 10; x++)
+        for (size_t x = 0; x <= 40; x++)
           {
-            if (doubleCompare(spu.RAM[11 * y + x], 1))
+            if (doubleCompare(spu.RAM[10 * y + x], 1))
               {
                 printf("#");
               }
             else
               {
-                printf("*");
+                printf(".");
               }
           }
         printf("\n");

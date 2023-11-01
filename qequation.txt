@@ -76,7 +76,7 @@ tworoots:
     push 2
     out
 
-    push 0 ;first root
+    push 0 ; first root
     push rbx
     sub
     push rdx
