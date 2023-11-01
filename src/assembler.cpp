@@ -50,10 +50,21 @@ ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
 
 ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
 
+#define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                     \
+                    fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1); \
+                    myClose(log_compile);
 
-#define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
+#define FREE_EVERYTHING DestroyText(&assemblyText); free(bytecode); free(labels.label)
 
 #define WRITE_LISTING(...) if (runNum == 2) __VA_ARGS__
+
+#define RETURN_ERROR(error)                                                                                         \
+do                                                                                                                  \
+{                                                                                                                   \
+    __typeof__(error) _error = error;                                                                               \
+    if (_error != 0)                                                                                                \
+        return _error;                                                                                              \
+} while (0)
 
 ErrorCode Compile(const char* filename, const char* listingFileName)
 {
@@ -92,7 +103,14 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
                                            "Line:", "Address:", "Cmd:", "Reg:", "Value:"));
 
         for (size_t index = 0; index < numLines; index++)
+          {
             error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum);
+            if (error)
+              {
+                COMPILE_LOG(error);
+                break;
+              }
+          }
       }  
     
     myOpen("code.bin", "wb", codebin);
@@ -103,7 +121,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
 
     myClose(listingFile);
 
-    freeEverything;
+    FREE_EVERYTHING;
 
     return error;
 }
@@ -143,14 +161,6 @@ size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t t
     return LABEL_NOT_FOUND;
 }
 
-#define RETURN_ERROR(error)                                                                                         \
-do                                                                                                                  \
-{                                                                                                                   \
-    __typeof__(error) _error = error;                                                                               \
-    if (_error)                                                                                                     \
-        return _error;                                                                                              \
-} while (0)
-
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
 {
     CheckPointerValidation(assemblyText);
@@ -172,8 +182,10 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     if (labelPtr)
       {
         *labelPtr = '\0';
-
-        return proccessLabel(curLine, labels, curPosition);
+        if (runNum == 1)
+            return proccessLabel(curLine, labels, curPosition);
+        else
+            return OK;
       }  
   
     char command[MAX_COMMAND_LENGTH]     = "";
@@ -194,6 +206,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                                                            bytecode,                                                        \
                                                              labels,                                                        \
                                                               runNum);                                                      \
+          RETURN_ERROR(arg.error);                                                                                          \
           *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
           if (argc)                                                                                                         \
             {                                                                                                               \
@@ -214,16 +227,14 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                 }                                                                                                           \
             }                                                                                                               \
              WRITE_LISTING(fprintf(listingFile, "\n"));                                                                     \
+             return OK;                                                                                                     \
         }                                                                                                                   \                                                        
         
     #include "commands.h"
 
-        else
-          return INCORRECT_SYNTAX;
+    return INCORRECT_SYNTAX;
 
     #undef DEF_COMMAND    
-
-    return OK;                        
 }
 
 #define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
@@ -246,11 +257,11 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       }
     if (!(openBracketPtr || closeBracketPtr))
       {
-        arg.error = SYNTAX_ERROR;
+        arg.error = SYNTAX_ERROR; 
       }
     
-    arg.error = parseReg(argument, &arg); // RETURN_ERROR_ARG(arg);
-    printf("error code: %d \n", arg.error);
+    arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
+    printf("err %d\n", arg.error);
     
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
       {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
@@ -262,8 +273,8 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
     if (plusPtr)
         argument = plusPtr + 1;
 
-    arg.error = parseImmedOrLabel(argument, &arg, labels, runNum);
-    printf("error code: %d %d \n", arg.error, __LINE__);
+    arg.error = parseImmedOrLabel(argument, &arg, labels, runNum); RETURN_ERROR_ARG(arg);
+    printf("err %d\n", arg.error);
 
     WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
     
@@ -294,10 +305,12 @@ ErrorCode parseReg(char* argument, ArgRes* arg)
 
 ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
 {
-    arg->error = parseImmed(argument, arg);
+    ErrorCode temperror = parseImmed(argument, arg);
 
-    if (arg->argType == 0)  
-        arg->error = parseLabel(argument, arg, labels, runNum);
+    if ((arg->argType & ARG_FORMAT_IMMED) == 0)  
+        parseLabel(argument, arg, labels, runNum);
+    else
+        arg->error = temperror;
     
     return arg->error;
 }
@@ -314,6 +327,7 @@ ErrorCode parseImmed(char* argument, ArgRes* arg)
           {
             arg->immed = value;
             arg->argType |= ARG_FORMAT_IMMED; // what if label is the argument
+            argument += check;
           }
         else
           {
@@ -340,7 +354,7 @@ ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
             
             if (labelAddress != LABEL_NOT_FOUND)
                 memcpy(&arg->immed, &labelAddress, sizeof(size_t));
-            else if(labelAddress == LABEL_NOT_FOUND && runNum == 2)
+            if(labelAddress == LABEL_NOT_FOUND && runNum == 2)
                 return NON_EXIST_LABEL;
           }    
 
