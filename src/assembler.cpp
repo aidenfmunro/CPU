@@ -108,7 +108,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
             if (error)
               {
                 COMPILE_LOG(error);
-                break;
+                RETURN_ERROR(error);
               }
           }
       }  
@@ -180,12 +180,13 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     char* labelPtr = strchr(curLine, int(':'));
 
     if (labelPtr)
-      {
+      { 
         *labelPtr = '\0';
         if (runNum == 1)
-            return proccessLabel(curLine, labels, curPosition);
-        else
-            return OK;
+          {
+            proccessLabel(curLine, labels, curPosition);
+          }
+        return OK;
       }  
   
     char command[MAX_COMMAND_LENGTH]     = "";
@@ -196,6 +197,8 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
+    
+
 
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
@@ -232,9 +235,9 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
         
     #include "commands.h"
 
-    return INCORRECT_SYNTAX;
+    #undef DEF_COMMAND
 
-    #undef DEF_COMMAND    
+    return OK;    
 }
 
 #define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
@@ -261,7 +264,8 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       }
     
     arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
-    printf("err %d\n", arg.error);
+
+    printf("%d\n", arg.error);
     
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
       {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
@@ -274,8 +278,9 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
         argument = plusPtr + 1;
 
     arg.error = parseImmedOrLabel(argument, &arg, labels, runNum); RETURN_ERROR_ARG(arg);
-    printf("err %d\n", arg.error);
 
+    printf("%d\n", arg.error);
+    
     WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
     
     return arg;
@@ -363,7 +368,7 @@ ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
 
 RegNum getRegisterNum(const char symbol)
 {
-    switch(symbol)
+    switch (symbol)
       {
         case RAX:
           return 0;
