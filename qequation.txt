@@ -8,7 +8,7 @@ pop rax
 push rax
 push 0
 
-je lineareq
+je lineareq ;
 
 call discr
 

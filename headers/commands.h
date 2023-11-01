@@ -78,7 +78,9 @@ DEF_COMMAND(MUL, 6, 0,
     
 DEF_COMMAND(DIV, 7, 0,
     {
-        PUSH(pow(POP() / POP(), -1));   // TODO: check for zero      
+        elem_t b = POP();
+        elem_t a = POP();
+        PUSH(a / b);   // TODO: check for zero      
     })
 
 DEF_COMMAND(SQRT, 8, 0,

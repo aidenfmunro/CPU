@@ -38,7 +38,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
 ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
 
-RegNum getRegisterNum(const char argument);
+RegNum getRegisterNum(const char symbol);
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
@@ -47,6 +47,8 @@ ErrorCode parseReg(char* argument, ArgRes* arg);
 ErrorCode parseImmed(char* argument, ArgRes* arg);
 
 ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
+
+ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
 
 
 #define freeEverything DestroyText(&assemblyText); free(bytecode); free(labels.label)
@@ -90,7 +92,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
                                            "Line:", "Address:", "Cmd:", "Reg:", "Value:"));
 
         for (size_t index = 0; index < numLines; index++)
-            error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum); 
+            error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum);
       }  
     
     myOpen("code.bin", "wb", codebin);
@@ -125,8 +127,6 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
         return OK;
       }
 
-    ON_DEBUG(printf("label <%s> already exists!\n", labelName));
-
     return REPEATING_LABEL;    
 }
 
@@ -142,6 +142,14 @@ size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t t
 
     return LABEL_NOT_FOUND;
 }
+
+#define RETURN_ERROR(error)                                                                                         \
+do                                                                                                                  \
+{                                                                                                                   \
+    __typeof__(error) _error = error;                                                                               \
+    if (_error)                                                                                                     \
+        return _error;                                                                                              \
+} while (0)
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* labels, size_t runNum) // TODO: input const char*
 {
@@ -218,7 +226,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     return OK;                        
 }
 
-#define RETURN_ERROR(arg) if (arg.error != OK) return arg; 
+#define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
 
 ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
 {
@@ -233,13 +241,16 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       {
         argument = openBracketPtr + 1;
         arg.argType |= ARG_FORMAT_RAM;
-      }
-    else if (!(openBracketPtr || closeBracketPtr))
-      {
-        arg.error = SYNTAX_ERROR; // RETURN_ERROR(arg);
-      }
 
-    arg.error = parseReg(argument, &arg); // RETURN_ERROR(arg);
+        *closeBracketPtr = '\0';
+      }
+    if (!(openBracketPtr || closeBracketPtr))
+      {
+        arg.error = SYNTAX_ERROR;
+      }
+    
+    arg.error = parseReg(argument, &arg); // RETURN_ERROR_ARG(arg);
+    printf("error code: %d \n", arg.error);
     
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
       {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
@@ -250,15 +261,12 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
     if (plusPtr)
         argument = plusPtr + 1;
-      
-    arg.error = parseImmed(argument, &arg); // RETURN_ERROR(arg);
+
+    arg.error = parseImmedOrLabel(argument, &arg, labels, runNum);
+    printf("error code: %d %d \n", arg.error, __LINE__);
 
     WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
     
-    if (arg.argType == 0)
-      {
-        arg.error = parseLabel(argument, &arg, labels, runNum); // RETURN_ERROR(arg);
-      }
     return arg;
 }
 
@@ -270,7 +278,9 @@ ErrorCode parseReg(char* argument, ArgRes* arg)
 
     if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
       {
-        char regNum = regArg - 'a';
+        char regNum = getRegisterNum(regArg);
+
+        if (regNum == NON_EXIST_REGISTER) return NON_EXIST_REGISTER;
 
         arg->argType |= ARG_FORMAT_REG; 
         
@@ -278,19 +288,18 @@ ErrorCode parseReg(char* argument, ArgRes* arg)
 
         argument += check;
       }
-    else
-      {
-        if (regArg > 3)
-          {
-            return NON_EXIST_REGISTER;
-          }
-        else
-          {
-            return SYNTAX_ERROR;
-          }
-      }
     
     return OK;
+}
+
+ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
+{
+    arg->error = parseImmed(argument, arg);
+
+    if (arg->argType == 0)  
+        arg->error = parseLabel(argument, arg, labels, runNum);
+    
+    return arg->error;
 }
 
 ErrorCode parseImmed(char* argument, ArgRes* arg)
@@ -304,7 +313,7 @@ ErrorCode parseImmed(char* argument, ArgRes* arg)
         if (check != 0 && !isnan(value))
           {
             arg->immed = value;
-            arg->argType |= ARG_FORMAT_IMMED;
+            arg->argType |= ARG_FORMAT_IMMED; // what if label is the argument
           }
         else
           {
@@ -337,3 +346,26 @@ ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
 
     return OK;
 }
+
+RegNum getRegisterNum(const char symbol)
+{
+    switch(symbol)
+      {
+        case RAX:
+          return 0;
+
+        case RBX:
+          return 1;
+
+        case RCX:
+          return 2;
+
+        case RDX:
+          return 3;
+        
+        default:
+          return NON_EXIST_REGISTER;
+      }
+}
+
+
