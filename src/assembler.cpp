@@ -278,8 +278,6 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
         argument = plusPtr + 1;
 
     arg.error = parseImmedOrLabel(argument, &arg, labels, runNum); RETURN_ERROR_ARG(arg);
-
-    printf("%d\n", arg.error);
     
     WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
     
