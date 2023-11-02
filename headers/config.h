@@ -31,4 +31,6 @@ const char ARG_FORMAT_REG = (1 << 6);
 
 const unsigned char ARG_FORMAT_RAM = (1 << 7);
 
+const char ARG_FORMAT_CMD = 0x1F;
+
 #endif

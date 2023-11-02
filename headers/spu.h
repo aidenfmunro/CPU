@@ -10,8 +10,6 @@ const int nSLOTS = 2048;
 
 const int EXIT_CODE = -1;
 
-const char ARG_FORMAT_CMD = 0x1F;
-
 ErrorCode RunProgram(const char* filename);
 
 #endif

@@ -2,10 +2,10 @@ CFLAGS = -Wno-pointer-arith -g -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -We
 
 IFLAGS = -I./headers/
 
-all: a object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o
+all: a object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o # object/disassembler.o
 
-a: object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o
-	g++ $(IFLAGS) $(CFLAGS) object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o
+a: object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o # object/disassembler.o
+	g++ $(IFLAGS) $(CFLAGS) object/main.o object/stackfuncs.o object/textfuncs.o object/spu.o object/assembler.o object/utils.o # object/disassembler.o
 
 object/main.o: src/main.cpp
 	g++ $(IFLAGS) $(CFLAGS) -c src/main.cpp -o object/main.o
@@ -25,6 +25,8 @@ object/assembler.o: src/assembler.cpp
 object/utils.o: src/utils.cpp
 	g++ $(IFLAGS) $(CFLAGS) -c src/utils.cpp -o object/utils.o
 
+# object/disassembler.o: src/disassembler.cpp
+#	g++ $(IFLAGS) $(CFLAGS) -c src/disassembler.cpp -o object/utils.o
 
 clean :
 	rm a.out object/*.o 

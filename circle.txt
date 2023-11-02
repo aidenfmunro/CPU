@@ -21,7 +21,6 @@ pop rdx ; y
 
 call col
 hlt
-
     col:
         push 0
         pop rcx
@@ -39,8 +38,6 @@ hlt
         push 1
         add
         pop rcx
-        ; push rcx
-        ; out
 
         push rcx
         push 40
@@ -51,8 +48,6 @@ hlt
         push 1
         add
         pop rdx
-        ; push rdx
-        ; out
 
         jmp col
 
@@ -67,8 +62,6 @@ draw:
     mul
     add
     pop rbx
-    ; push rbx
-    ; out
     
     push 1
     pop [rbx] ; rbx

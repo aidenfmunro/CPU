@@ -242,8 +242,6 @@ struct Line* getLines(Text* text);
  * 
  */
 
-void DestroyText(Text* text);
-
 /**
  * 
  * \brief Sorts the text with the chosen sort mode.

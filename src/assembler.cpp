@@ -213,10 +213,10 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
                                                            bytecode,                                                        \
                                                              labels,                                                        \
                                                               runNum);                                                      \
-          RETURN_ERROR(arg.error);                                                                                          \
           *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
           if (argc)                                                                                                         \
             {                                                                                                               \
+               RETURN_ERROR(arg.error);                                                                                     \
               *(bytecode + *curPosition) |= arg.argType;                                                                    \
             }                                                                                                               \
           *curPosition += sizeof(char);                                                                                     \
@@ -259,8 +259,6 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       {
         argument = openBracketPtr + 1;
         arg.argType |= ARG_FORMAT_RAM;
-
-        *closeBracketPtr = '\0';
       }
     if (!(openBracketPtr || closeBracketPtr))
       {
