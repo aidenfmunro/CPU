@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    Compile("qequation.txt", "listing.txt");
+    Compile("factorial.txt", "listing.txt");
 
     RunProgram("code.bin");
 

@@ -42,13 +42,15 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
-ErrorCode parseReg(char* argument, ArgRes* arg);
+ErrorCode parseRam(char** argument, ArgRes* arg, FILE* listingFile);
 
-ErrorCode parseImmed(char* argument, ArgRes* arg);
+ErrorCode parseReg(char** argument, ArgRes* arg, size_t runNum, FILE* listingFile);
 
-ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
+ErrorCode parseImmed(char** argument, ArgRes* arg);
 
-ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum);
+ErrorCode parseLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum);
+
+ErrorCode parseImmedOrLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum, FILE* listingFile);
 
 #define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                         \
                     fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1);    \
@@ -250,45 +252,40 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
 
     arg.argType = 0;
 
-    char* openBracketPtr  = strchr(argument, '[');
-    char* closeBracketPtr = strchr(argument, ']');
+    arg.error = parseRam(&argument, &arg, listingFile);
 
-    if (openBracketPtr && closeBracketPtr)
-      {
-        argument = openBracketPtr + 1;
-        arg.argType |= ARG_FORMAT_RAM;
-      }
-    if (!(openBracketPtr || closeBracketPtr))
-      {
-        arg.error = SYNTAX_ERROR; 
-      }
+    arg.error = parseReg(&argument, &arg, runNum, listingFile); RETURN_ERROR_ARG(arg);
 
-    arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
-
-    if ((arg.argType & ARG_FORMAT_REG) != 0) 
-        {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
-    else 
-        {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
-    
-    char* plusPtr = strchr(argument, '+');
-
-    if (plusPtr)
-        argument = plusPtr + 1;
-
-    arg.error = parseImmedOrLabel(argument, &arg, labels, runNum); RETURN_ERROR_ARG(arg);
-    
-    WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg.immed));
+    arg.error = parseImmedOrLabel(&argument, &arg, labels, runNum, listingFile); RETURN_ERROR_ARG(arg);
     
     return arg;
 }
 
-ErrorCode parseReg(char* argument, ArgRes* arg)
+ErrorCode parseRam(char** argument, ArgRes* arg, FILE* listingFile)
+{
+    char* openBracketPtr  = strchr(*argument, '[');
+    char* closeBracketPtr = strchr(*argument, ']');
+
+    if (openBracketPtr && closeBracketPtr)
+      {
+        *argument = openBracketPtr + 1;
+        arg->argType |= ARG_FORMAT_RAM;
+      }
+    if (!(openBracketPtr || closeBracketPtr))
+      {
+        return SYNTAX_ERROR; 
+      }
+    
+    return OK;
+}
+
+ErrorCode parseReg(char** argument, ArgRes* arg, size_t runNum, FILE* listingFile)
 {
     char regArg = 0;
 
     int check   = 0;
 
-    if (sscanf(argument, "r%c%n", &regArg, &check) == 1 && *(argument + check) == 'x')
+    if (sscanf(*argument, "r%c%n", &regArg, &check) == 1 && *(*argument + check) == 'x')
       {
         char regNum = getRegisterNum(regArg);
 
@@ -298,13 +295,18 @@ ErrorCode parseReg(char* argument, ArgRes* arg)
         
         arg->regNum = regNum; 
 
-        argument += check;
+        *argument += check;
       }
+    
+      if ((arg->argType & ARG_FORMAT_REG) != 0) 
+        {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg->regNum));}
+      else 
+        {WRITE_LISTING(fprintf(listingFile, "%5s---", ""));}
     
     return OK;
 }
 
-ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
+ErrorCode parseImmedOrLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum, FILE* listingFile)
 {
     ErrorCode temperror = parseImmed(argument, arg);
 
@@ -313,16 +315,23 @@ ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t 
     else
         arg->error = temperror;
     
+    char* plusPtr = strchr(*argument, '+');
+
+    if (plusPtr)
+        *argument = plusPtr + 1;
+    
+    WRITE_LISTING(fprintf(listingFile, "%5s%lg", "", arg->immed));
+    
     return arg->error;
 }
 
-ErrorCode parseImmed(char* argument, ArgRes* arg)
+ErrorCode parseImmed(char** argument, ArgRes* arg)
 {
     elem_t value = POISON;
 
     int check = 0;
 
-    if (sscanf(argument, "%lg%n", &value, &check) == 1)
+    if (sscanf(*argument, "%lg%n", &value, &check) == 1)
       {
         if (check != 0 && !isnan(value))
           {
@@ -339,13 +348,13 @@ ErrorCode parseImmed(char* argument, ArgRes* arg)
     return OK;
 }
 
-ErrorCode parseLabel(char* argument, ArgRes* arg, Labels* labels, size_t runNum)
+ErrorCode parseLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum)
 {
     int check = 0;
 
     char labelName[MAX_LABELNAME_LENGTH] = "";
 
-        sscanf(argument, "%s%n", labelName, &check);
+        sscanf(*argument, "%s%n", labelName, &check);
 
         size_t labelAddress = findLabel(labels, labelName);
 
