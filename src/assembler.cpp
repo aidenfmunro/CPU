@@ -264,9 +264,10 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       {
         arg.error = SYNTAX_ERROR; 
       }
-    
+    printf("%c\n", *argument);    
     arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
-    
+    printf("%c\n", *argument);   
+
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
         {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
     else 
@@ -310,7 +311,7 @@ ErrorCode parseImmedOrLabel(char* argument, ArgRes* arg, Labels* labels, size_t 
 {
     ErrorCode temperror = parseImmed(argument, arg);
 
-    if ((arg->argType & ARG_FORMAT_IMMED) == 0)  
+    if ((arg->argType & ARG_FORMAT_IMMED) == 0 && (arg->argType & ARG_FORMAT_REG) == 0)  
         parseLabel(argument, arg, labels, runNum);
     else
         arg->error = temperror;
