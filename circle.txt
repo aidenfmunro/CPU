@@ -53,12 +53,12 @@ hlt
 
 draw:
     push rax
-    push 5 ; 509
+    push 4 ; 509
     jae back
 
     push rcx
     push rdx
-    push 5 ; 511
+    push 20 ; 511
     mul
     add
     pop rbx
@@ -73,17 +73,17 @@ back:
 
 getRad:
     push rcx
-    push 20
+    push 10
     sub
     push rcx
-    push 20
+    push 10
     sub
     mul
     push rdx
-    push 20
+    push 10
     sub
     push rdx
-    push 20
+    push 10
     sub
     mul
     add

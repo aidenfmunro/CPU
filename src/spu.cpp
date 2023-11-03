@@ -44,11 +44,11 @@ ErrorCode RunProgram(const char* filename)
           {
             if (doubleCompare(spu.RAM[10 * y + x], 1))
               {
-                printf("#");
+                printf("# ");
               }
             else
               {
-                printf(".");
+                printf(". ");
               }
           }
         printf("\n");

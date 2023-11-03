@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    Compile("simple.txt", "listing.txt");
+    Compile("circle.txt", "listing.txt");
 
     RunProgram("code.bin");
 

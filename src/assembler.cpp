@@ -201,8 +201,6 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
-    
-
 
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
@@ -264,9 +262,8 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
       {
         arg.error = SYNTAX_ERROR; 
       }
-    printf("%c\n", *argument);    
+
     arg.error = parseReg(argument, &arg); RETURN_ERROR_ARG(arg);
-    printf("%c\n", *argument);   
 
     if ((arg.argType & ARG_FORMAT_REG) != 0) 
         {WRITE_LISTING(fprintf(listingFile, "%5sr%cx", "", arg.regNum));}
