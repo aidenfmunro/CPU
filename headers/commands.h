@@ -80,7 +80,10 @@ DEF_COMMAND(DIV, 7, 0,
     {
         elem_t b = POP();
         elem_t a = POP();
-        PUSH(a / b);   // TODO: check for zero      
+        if (!doubleCompare(b, 0))
+            PUSH(a / b);   // TODO: check for zero    
+        else
+          return ZERO_DIVISION;  
     })
 
 DEF_COMMAND(SQRT, 8, 0,
@@ -189,4 +192,9 @@ DEF_COMMAND(CALL, 20, 1,
 DEF_COMMAND(RET, 21, 0,
     {
       *curPosition = POPC();
+    })
+
+DEF_COMMAND(MEOW, 22, 0,
+    {
+      printf("meow :3\n");
     })

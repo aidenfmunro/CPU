@@ -22,7 +22,8 @@ enum ERRORS
     REPEATING_LABEL     = 15,
     SYNTAX_ERROR        = 17,
     NON_EXIST_REGISTER  = 19,
-    NON_EXIST_LABEL     = 21
+    NON_EXIST_LABEL     = 21,
+    ZERO_DIVISION       = 23
 };
 
 const char ARG_FORMAT_IMMED = (1 << 5);
