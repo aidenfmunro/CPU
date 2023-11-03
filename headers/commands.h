@@ -1,6 +1,10 @@
 DEF_COMMAND(PUSH, 1, 1,
     {
-      if (isArgIm && isArgReg)
+      if (isArgIm && isArgReg && isArgRam)
+        {
+          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
+        }
+      else if (isArgIm && isArgReg)
         {
           PUSH(spu->regs[registerNum] + value);
         }
@@ -11,10 +15,6 @@ DEF_COMMAND(PUSH, 1, 1,
       else if (isArgReg)
         {
           PUSH(spu->regs[registerNum]);
-        }
-      else if (isArgIm && isArgReg && isArgRam)
-        {
-          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
         }
       else if (isArgIm)
         {
