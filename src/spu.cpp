@@ -35,7 +35,7 @@ ErrorCode RunProgram(const char* filename)
 
     size_t curPosition = 0;
 
-    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
+    while (execCommand(&spu, &curPosition) != EXIT_CODE) {; PrintStack(&spu.stack);}
     
     //-----------------------------------------------------
     //for (size_t y = 0; y <= 40; y++) // hardcode

@@ -3,29 +3,21 @@ pop rax   ; f(n) = n * f(n-1)
 
 push rax
 push 0
-jb negativenum
 
-push 1
-pop rbx                       
+jb negativenum                    
 
 call factorial
-
-return:
-    push rbx
-    out
-    hlt
+out
+hlt
 
 factorial: 
 
     push rax
-    push 2
+    push 1
     
     jb return
 
     push rax
-    push rbx
-    mul
-    pop rbx
 
     push rax
     push 1
@@ -33,9 +25,16 @@ factorial:
     pop rax
 
     call factorial
+
+    mul
+
     ret
 
 negativenum:
     push -1
     out 
     hlt
+
+return:
+    push 1
+    ret
