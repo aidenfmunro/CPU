@@ -58,7 +58,7 @@ draw:
 
     push rcx
     push rdx
-    push 20 ; 511
+    push 10 ; 511
     mul
     add
     pop rbx
@@ -73,17 +73,17 @@ back:
 
 getRad:
     push rcx
-    push 10
+    push 20
     sub
     push rcx
-    push 10
+    push 20
     sub
     mul
     push rdx
-    push 10
+    push 20
     sub
     push rdx
-    push 10
+    push 20
     sub
     mul
     add

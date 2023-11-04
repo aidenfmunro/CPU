@@ -52,6 +52,8 @@ ErrorCode parseLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum
 
 ErrorCode parseImmedOrLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum, FILE* listingFile);
 
+ErrorCode emitCommand(int num, int argc, byte* byteode, ArgRes* arg, size_t* curPosition, size_t runNum);
+
 #define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                         \
                     fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1);    \
                     myClose(log_compile);
@@ -181,6 +183,8 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     char* labelPtr = strchr(curLine, int(':'));
 
+    int error = SYNTAX_ERROR;
+
     if (labelPtr)
       { 
         *labelPtr = '\0';
@@ -209,40 +213,49 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
         {                                                                                                                   \
           WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%016lX] %4s", *curPosition, "", *curPosition, command));           \
           ArgRes arg = parseArgument(listingFile, curLine + commandLength + 1,                                              \
-                                                        curPosition,                                                        \
-                                                           bytecode,                                                        \
-                                                             labels,                                                        \
-                                                              runNum);                                                      \
-          *(bytecode + *curPosition) |= CMD_ ## name;                                                                       \
-          if (argc)                                                                                                         \
-            {                                                                                                               \
-               RETURN_ERROR(arg.error);                                                                                     \
-              *(bytecode + *curPosition) |= arg.argType;                                                                    \
-            }                                                                                                               \
-          *curPosition += sizeof(char);                                                                                     \
-          if (argc)                                                                                                         \
-            {                                                                                                               \
-              if (arg.argType & ARG_FORMAT_REG)                                                                             \
-                {                                                                                                           \
-                  memcpy(bytecode + *curPosition, &arg.regNum, sizeof(char));                                               \
-                  *curPosition += sizeof(char);                                                                             \
-                }                                                                                                           \
-              if (arg.argType & ARG_FORMAT_IMMED)                                                                           \
-                {                                                                                                           \  
-                  memcpy(bytecode + *curPosition, &arg.immed, sizeof(double));                                              \
-                  *curPosition += sizeof(double);                                                                           \
-                }                                                                                                           \
-            }                                                                                                               \
-             WRITE_LISTING(fprintf(listingFile, "\n"));                                                                     \
-             return OK;                                                                                                     \
-        }                                                                                                                   \                                                        
+                                                                  curPosition,                                              \
+                                                                     bytecode,                                              \
+                                                                       labels,                                              \
+                                                                      runNum);                                              \
+          error = emitCommand(CMD_ ## name, argc, bytecode, &arg, curPosition, runNum);                                     \
+          WRITE_LISTING(fprintf(listingFile, "\n"));                                                                        \
+          return OK;                                                                                                        \
+        }                                                                                                                   \                                                       
         
     #include "commands.h"
 
     #undef DEF_COMMAND
 
-    return INCORRECT_SYNTAX;    
+    return INCORRECT_SYNTAX; // TODO: emit code function, commands.h make a getarg function in spu    
 }
+
+ErrorCode emitCommand(int num, int argc, byte* bytecode, ArgRes* arg, size_t* curPosition, size_t runNum)
+{
+    *(bytecode + *curPosition) |= num;  
+
+    if (argc)                                                                                                         
+      {                                                                                                               
+          RETURN_ERROR(arg->error);                                                                                     
+        *(bytecode + *curPosition) |= arg->argType;                                                                    
+      }                                                                                                               
+    *curPosition += sizeof(char);                                                                                     
+    if (argc)                                                                                                         
+      {                                                                                                               
+        if (arg->argType & ARG_FORMAT_REG)                                                                             
+          {                                                                                                           
+            memcpy(bytecode + *curPosition, &arg->regNum, sizeof(char));                                               
+            *curPosition += sizeof(char);                                                                             
+          }                                                                                                           
+        if (arg->argType & ARG_FORMAT_IMMED)                                                                           
+          {                                                                                                             
+            memcpy(bytecode + *curPosition, &arg->immed, sizeof(double));                                              
+            *curPosition += sizeof(double);                                                                           
+          }                                                                                                           
+      }                                                                                                               
+    
+    return OK;                                                
+}
+
 
 #define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
 
@@ -281,21 +294,28 @@ ErrorCode parseRam(char** argument, ArgRes* arg, FILE* listingFile)
 
 ErrorCode parseReg(char** argument, ArgRes* arg, size_t runNum, FILE* listingFile)
 {
-    char regArg = 0;
+    char regArg    = 0;
 
-    int check   = 0;
+    int countChars = 0;
 
-    if (sscanf(*argument, "r%c%n", &regArg, &check) == 1 && *(*argument + check) == 'x')
+    if (sscanf(*argument, "r%c%n", &regArg, &countChars) == 1 && *(*argument + countChars) == 'x')
       {
-        char regNum = getRegisterNum(regArg);
+        if ((*argument)[countChars] == 'x')
+          {
+           char regNum = getRegisterNum(regArg);
 
-        if (regNum == NON_EXIST_REGISTER) return NON_EXIST_REGISTER;
+           if (regNum == NON_EXIST_REGISTER) return NON_EXIST_REGISTER;
 
-        arg->argType |= ARG_FORMAT_REG; 
+           arg->argType |= ARG_FORMAT_REG; 
         
-        arg->regNum = regNum; 
+           arg->regNum = regNum; 
 
-        *argument += check;
+           *argument += countChars;
+          }
+        else
+          {
+            return OK;
+          }
       }
     
       if ((arg->argType & ARG_FORMAT_REG) != 0) 

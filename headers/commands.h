@@ -34,7 +34,7 @@ DEF_COMMAND(POP, 2, 1,
         }
       else if (isArgReg && isArgRam && isArgIm)
         {
-          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP();
+          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP(); // change to getArg
         }
       else if (isArgRam && isArgIm)
         {
@@ -50,15 +50,15 @@ DEF_COMMAND(IN, 3, 0,
     {
       scanf("%lg", &value);
       PUSH(value);
-
-      if (isArgReg)
-        {
-          spu->regs[registerNum] = POP();
-        }
-      else if (isArgRam)
-        {
-          spu->RAM[size_t(value)] = POP();
-        }
+      // example: in reg
+      // if (isArgReg)
+      //   {
+      //     spu->regs[registerNum] = POP(); // 
+      //   }
+      // else if (isArgRam)
+      //   {
+      //     spu->RAM[size_t(value)] = POP();
+      //   }
     })
 
 DEF_COMMAND(ADD, 4, 0,
@@ -113,7 +113,7 @@ DEF_COMMAND(HLT, 12, 0,
 
 DEF_COMMAND(JMP, 13, 1,
     {
-      *curPosition = labelAddress;
+      *curPosition = labelAddress;                // jump into diff define
     })
 
 DEF_COMMAND(JNE, 14, 1,

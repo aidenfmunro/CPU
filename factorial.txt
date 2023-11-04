@@ -1,5 +1,5 @@
 in        ; input n                     
-pop rax
+pop rax   ; f(n) = n * f(n-1) 
 
 push rax
 push 0
@@ -16,6 +16,7 @@ return:
     hlt
 
 factorial: 
+
     push rax
     push 2
     

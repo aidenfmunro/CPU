@@ -34,9 +34,9 @@ lineareq:
     push 1
     out
     push 0
-    push rbx
-    sub
     push rcx
+    sub
+    push rbx
     div
     out 
     hlt
