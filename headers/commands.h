@@ -111,75 +111,26 @@ DEF_COMMAND(HLT, 12, 0,
         return EXIT_CODE; 
     })
 
+#define JUMP_COMMAND(name, num, comparison)         \
+DEF_COMMAND(name, num, 1,                           \
+    {                                               \
+      elem_t b = POP();                             \
+      elem_t a = POP();                             \
+                                                    \
+      if (comparison)                               \
+          *curPosition = labelAddress;              \
+    })
+
+JUMP_COMMAND(JNE, 14, !doubleCompare(a, b))
+JUMP_COMMAND(JE, 15, doubleCompare(a, b))
+JUMP_COMMAND(JBE, 16, a <= b)
+JUMP_COMMAND(JB, 17, a < b)
+JUMP_COMMAND(JAE, 18, a >= b)
+JUMP_COMMAND(JA, 19, a > b)
+
 DEF_COMMAND(JMP, 13, 1,
     {
-      *curPosition = labelAddress;                // jump into diff define
-    })
-
-DEF_COMMAND(JNE, 14, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (!doubleCompare(a, b))
-        {
-          *curPosition = labelAddress;
-        }
-    })
-
-DEF_COMMAND(JE, 15, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (doubleCompare(a, b)) // double values comparisson 
-        {
-          *curPosition = labelAddress;
-        }
-    })
-
-DEF_COMMAND(JBE, 16, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (a <= b)
-        {
-          *curPosition = labelAddress;
-        }
-    })
-
-DEF_COMMAND(JB, 17, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (a < b)
-        {
-          *curPosition = labelAddress;
-        }
-    })
-
-DEF_COMMAND(JAE, 18, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (a >= b)
-        {
-          *curPosition = labelAddress;
-        }
-    })
-
-DEF_COMMAND(JA, 19, 1,
-    {
-      elem_t b = POP();
-      elem_t a = POP();
-
-      if (a > b)
-        {
-          *curPosition = labelAddress;
-        }
+      *curPosition = labelAddress;     
     })
 
 DEF_COMMAND(CALL, 20, 1,
