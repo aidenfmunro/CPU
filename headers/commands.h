@@ -111,7 +111,7 @@ DEF_COMMAND(RND, 23, 0,
 
 DEF_COMMAND(SCRN, 24, 0,
     {
-      for (size_t y = 0; y <= 40; y++) // hardcode
+      for (size_t y = 0; y <= 40; y++)
         {
           for (size_t x = 0; x <= 40; x++)
             {

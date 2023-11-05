@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "textfuncs.h"
 #include "stackfuncs.h"
 #include "spu.h"
 #include "config.h"
@@ -46,7 +45,7 @@ ErrorCode RunProgram(const char* filename)
 
     size_t curPosition = 0;
 
-    while (execCommand(&spu, &curPosition) != EXIT_CODE) {PrintStack(&spu.stack);}
+    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
     
     DestroySPU(&spu);  
 
@@ -75,7 +74,7 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
 
     spu->calls = calls;
 
-    myOpen("code.bin", "rb", codebin);
+    myOpen(filename, "rb", codebin);
 
     myRead(spu->code, sizeof(byte), fileSize, codebin);
 
@@ -107,7 +106,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
   
     switch (command & ARG_FORMAT_CMD)
       {
-        #define DEF_COMMAND(name, number, argc, code)                                \
+        #define DEF_COMMAND(name, number, argc, code)                               \
                                                                                     \
             case number:                                                            \
               {                                                                     \
@@ -118,7 +117,6 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                 {                                                                   \
                   arg = getArg(spu, curPosition, command);                          \
                 }                                                                   \
-                                                                                    \
                                                                                     \
                 code                                                                \
                 break;                                                              \
@@ -138,6 +136,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
 ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
 {
     ArgRes result = {};
+
     elem_t tempvalue = 0;
 
     if (command & ARG_FORMAT_REG)
@@ -159,7 +158,5 @@ ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
         result.place = &spu->RAM[index];
       }
     
-    printf("%ld, %lg\n", result.labelAddress, size_t(result.value));
-
     return result;
 }
