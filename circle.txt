@@ -53,12 +53,15 @@ hlt
 
 draw:
     push rax
-    push 4 ; 509
+    push 11 ; 509
     jae back
+    push rax
+    push 9
+    jbe back
 
     push rcx
     push rdx
-    push 10 ; 511
+    push 40 ; 511
     mul
     add
     pop rbx

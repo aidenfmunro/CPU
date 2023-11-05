@@ -25,7 +25,7 @@ ErrorCode CreateSPU(SPU* spu, const char* filename);
 
 ErrorCode DestroySPU(SPU* spu);
 
-ErrorCode execCommand(SPU* spu, size_t* position);
+ErrorCode execCommand(SPU* spu, size_t* position); 
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -35,25 +35,25 @@ ErrorCode RunProgram(const char* filename)
 
     size_t curPosition = 0;
 
-    while (execCommand(&spu, &curPosition) != EXIT_CODE) {; PrintStack(&spu.stack);}
+    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
     
     //-----------------------------------------------------
-    //for (size_t y = 0; y <= 40; y++) // hardcode
-    //  {
-    //    for (size_t x = 0; x <= 40; x++)
-    //      {
-    //        if (doubleCompare(spu.RAM[10 * y + x], 1))
-    //          {
-    //            printf("# ");
-    //          }
-    //        else
-    //          {
-    //            printf(". ");
-    //          }
-    //      }
-    //    printf("\n");
-    //    printf("\n");
-    //  }
+    for (size_t y = 0; y <= 40; y++) // hardcode
+      {
+        for (size_t x = 0; x <= 40; x++)
+          {
+            if (doubleCompare(spu.RAM[40 * y + x], 1))
+              {
+                printf("# ");
+              }
+            else
+              {
+                printf(". ");
+              }
+          }
+        printf("\n");
+        printf("\n");
+      }
     //------------------------------------------------------
 
     DestroySPU(&spu);  

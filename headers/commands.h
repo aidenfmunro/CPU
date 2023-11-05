@@ -149,3 +149,9 @@ DEF_COMMAND(MEOW, 22, 0,
     {
       printf("meow :3\n");
     })
+
+DEF_COMMAND(RND, 23, 0,
+    {
+      elem_t a = POP();
+      PUSH(round(a));
+    })
