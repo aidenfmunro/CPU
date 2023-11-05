@@ -1,12 +1,3 @@
-push 5
-pop [509] ; Radius
-
-push 5
-pop [510] ; X size
-
-push 5
-pop [511] ; Y size
-
 push 0
 pop rax ; get the cur rad
 
@@ -20,6 +11,7 @@ push 0
 pop rdx ; y
 
 call col
+scrn
 hlt
     col:
         push 0
@@ -53,15 +45,15 @@ hlt
 
 draw:
     push rax
-    push 11 ; 509
+    push 9.5 ;
     jae back
     push rax
-    push 9
+    push 8
     jbe back
 
     push rcx
     push rdx
-    push 40 ; 511
+    push 40 ;
     mul
     add
     pop rbx
