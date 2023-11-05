@@ -1,64 +1,17 @@
 DEF_COMMAND(PUSH, 1, 1,
     {
-      if (isArgIm && isArgReg && isArgRam)
-        {
-          PUSH(spu->RAM[size_t(spu->regs[registerNum]) + (size_t)value]);
-        }
-      else if (isArgIm && isArgReg)
-        {
-          PUSH(spu->regs[registerNum] + value);
-        }
-      else if (isArgRam && isArgReg)
-        {
-          PUSH(spu->RAM[size_t(spu->regs[registerNum])]);
-        }
-      else if (isArgReg)
-        {
-          PUSH(spu->regs[registerNum]);
-        }
-      else if (isArgIm)
-        {
-          PUSH(value);
-        }
+      PUSH(arg.value);
     })
 
 DEF_COMMAND(POP, 2, 1,
     {
-      if (isArgIm && isArgReg)
-        {
-          spu->regs[registerNum] = POP() + value;
-        }
-      else if (isArgReg && isArgRam)
-        {
-          spu->RAM[size_t(spu->regs[registerNum])] = POP();
-        }
-      else if (isArgReg && isArgRam && isArgIm)
-        {
-          spu->RAM[size_t(spu->regs[registerNum]) + size_t(value)] = POP(); // change to getArg
-        }
-      else if (isArgRam && isArgIm)
-        {
-          spu->RAM[size_t(value)] = POP();
-        }
-      else if (isArgReg)
-        { 
-          spu->regs[registerNum] = POP();
-        }
+      *arg.place = POP();
     })
 
 DEF_COMMAND(IN, 3, 0,  
     {
-      scanf("%lg", &value);
-      PUSH(value);
-      // example: in reg
-      // if (isArgReg)
-      //   {
-      //     spu->regs[registerNum] = POP(); // 
-      //   }
-      // else if (isArgRam)
-      //   {
-      //     spu->RAM[size_t(value)] = POP();
-      //   }
+      scanf("%lg", &arg.value);
+      PUSH(arg.value);
     })
 
 DEF_COMMAND(ADD, 4, 0,
@@ -118,7 +71,7 @@ DEF_COMMAND(name, num, 1,                           \
       elem_t a = POP();                             \
                                                     \
       if (comparison)                               \
-          *curPosition = labelAddress;              \
+          *curPosition = arg.labelAddress;         \
     })
 
 JUMP_COMMAND(JNE, 14, !doubleCompare(a, b))
@@ -130,14 +83,14 @@ JUMP_COMMAND(JA, 19, a > b)
 
 DEF_COMMAND(JMP, 13, 1,
     {
-      *curPosition = labelAddress;     
+      *curPosition = arg.labelAddress;     
     })
 
 DEF_COMMAND(CALL, 20, 1,
     {
       PUSHC(*curPosition);
       
-      *curPosition = labelAddress;
+      *curPosition = arg.labelAddress;
     })
 
 DEF_COMMAND(RET, 21, 0,

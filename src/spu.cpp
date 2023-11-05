@@ -8,6 +8,15 @@
 #include "utils.h"
 #include "dsl.h"
 
+struct ArgRes
+{
+    elem_t* place;
+    elem_t value;
+
+    size_t labelAddress;
+    ErrorCode error;
+};
+
 struct SPU
 {
     Stack stack;
@@ -27,6 +36,8 @@ ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode execCommand(SPU* spu, size_t* position); 
 
+ArgRes getArg(SPU* spu, size_t* curPosition, byte command);
+
 ErrorCode RunProgram(const char* filename)
 {
     SPU spu = {};
@@ -35,7 +46,7 @@ ErrorCode RunProgram(const char* filename)
 
     size_t curPosition = 0;
 
-    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
+    while (execCommand(&spu, &curPosition) != EXIT_CODE) {PrintStack(&spu.stack);}
     
     DestroySPU(&spu);  
 
@@ -92,49 +103,63 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
 {    
     CheckPointerValidation(spu);
     
-    char instruction                    = *(spu->code + *curPosition);               // TODO: if statements for immed and reg optimize
-    bool isArgReg                       = instruction & ARG_FORMAT_REG;
-    bool isArgIm                        = instruction & ARG_FORMAT_IMMED;                    
-    bool isArgRam                       = instruction & ARG_FORMAT_RAM;
-    char commandCode                    = instruction & ARG_FORMAT_CMD;
-    char registerNum                    = 0;
-    elem_t value                        = 0;                                                   
-    size_t labelAddress                 = 0;
+    char command = *(spu->code + *curPosition);
   
-    switch (commandCode)
+    switch (command & ARG_FORMAT_CMD)
       {
-        #define DEF_COMMAND(name, number, argc, cde)                                \
+        #define DEF_COMMAND(name, number, argc, code)                                \
                                                                                     \
             case number:                                                            \
-                                                                                    \
+              {                                                                     \
               *curPosition += sizeof(char);                                         \
+              ArgRes arg = {};                                                      \
                                                                                     \
               if (argc)                                                             \
                 {                                                                   \
-                  if (isArgReg)                                                     \
-                    {                                                               \  
-                      memcpy(&registerNum, spu->code + *curPosition, sizeof(char)); \
-                      *curPosition += sizeof(char);                                 \
-                    }                                                               \
-                  if (isArgIm)                                                      \
-                    {                                                               \
-                      memcpy(&value, spu->code + *curPosition, sizeof(double));            \
-                      memcpy(&labelAddress, spu->code + *curPosition, sizeof(double));     \
-                      *curPosition += sizeof(double);                                      \
-                    }                                                               \
-                                                                                    \
+                  arg = getArg(spu, curPosition, command);                          \
                 }                                                                   \
-                cde                                                                 \
+                                                                                    \
+                                                                                    \
+                code                                                                \
                 break;                                                              \
-
+              }
             #include "commands.h"
 
             default:
-                printf("Unknown command, code: %X, line: %ld\n", commandCode, *curPosition);
+                printf("Unknown command, code: %X, line: %ld\n", command & ARG_FORMAT_CMD, *curPosition);
                 return EXIT_CODE;
         
         #undef DEF_COMMAND
       }
 
     return OK;   
+}
+
+ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
+{
+    ArgRes result = {};
+    elem_t tempvalue = 0;
+
+    if (command & ARG_FORMAT_REG)
+      {
+        result.value += spu->regs[int(spu->code[*curPosition])];
+        result.place = &spu->regs[int(spu->code[*curPosition])];
+        *curPosition += sizeof(char);
+      }
+    if (command & ARG_FORMAT_IMMED)
+      {
+        memcpy(&tempvalue, &spu->code[*curPosition], sizeof(double));
+        result.value += tempvalue;
+        memcpy(&result.labelAddress,  &spu->code[*curPosition], sizeof(double)); // wtf?
+        *curPosition += sizeof(double);
+      }
+    if (command & ARG_FORMAT_RAM)
+      {
+        size_t index = (size_t)result.value;
+        result.place = &spu->RAM[index];
+      }
+    
+    printf("%ld, %lg\n", result.labelAddress, size_t(result.value));
+
+    return result;
 }
