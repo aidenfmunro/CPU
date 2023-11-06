@@ -4,6 +4,16 @@
 #include <inttypes.h>
 #include "config.h"
 
+/*
+	TODO: To add a new register 'x' to your system
+	you have to at least:
+
+	1) add cons char RXX = 'x' in assembler.h
+	2) change nREGS in spu.h
+
+	It's easy to forget 2).
+	Can't you put process of adding new register in one action?
+*/
 const char RAX = 'a';
 
 const char RBX = 'b';

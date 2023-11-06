@@ -43,6 +43,12 @@ ErrorCode RunProgram(const char* filename)
 
     CreateSPU(&spu, filename);
 
+    /*
+        TODO: Add Instruction Pointer to SPU
+        
+        Usually there is special register called Instruction Pointer (IP)
+        that stores address of command that is executed
+    */
     size_t curPosition = 0;
 
     while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
@@ -142,6 +148,8 @@ ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
     if (command & ARG_FORMAT_REG)
       {
         result.value += spu->regs[int(spu->code[*curPosition])];
+
+        // TODO: What is place?) Come up with more verbose name
         result.place = &spu->regs[int(spu->code[*curPosition])];
         *curPosition += sizeof(char);
       }
@@ -151,6 +159,14 @@ ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
         result.value += tempvalue;
         memcpy(&result.labelAddress,  &spu->code[*curPosition], sizeof(double)); // wtf?
         *curPosition += sizeof(double);
+
+        /*
+            TODO:
+                Do u really need result.value and result.label_address as
+                separate variables?
+
+                Cant you just use result.value when need result.label_address?
+        */
       }
     if (command & ARG_FORMAT_RAM)
       {

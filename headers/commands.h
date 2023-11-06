@@ -1,3 +1,42 @@
+/*
+    TODO: Make DSL more homogeneous
+
+    DSL is language that users use to create
+    new command for your SPU.
+
+    In README you can specify which variables can
+    be used by your users. (e.g. arg.value, curPosition)
+
+    There is no sense to give user an information that curPosition
+    is in fact is pointer to position (that's strange btw).
+
+    For user it would be nice to write highlevel code like:
+
+    def DEF_COMMAND(AGE_TEST, 404, 1,
+        { 
+            Elem a = POP();
+
+            if (a < 18)
+            {
+                Print("Too little for buying alcohol");
+            }
+            else
+            {
+                // Move to alcohol buying routine
+                Position = ArgValue;
+            }
+        })
+
+    All in all, I mean there should be clear border of abstraction
+    between your spu.cpp code and DSL code.
+
+    DSL should use only restricted subset of SPU variables and functions.
+
+    It helps us to abstract user from internals. Like when you write .dot file
+    you do care only about node definitions and connections between them. Any other
+    details of implementation of this graph tool are not your business. 
+*/
+
 DEF_COMMAND(PUSH, 1, 1,
     {
       PUSH(arg.value);
@@ -81,6 +120,7 @@ JUMP_COMMAND(JB, 17, a < b)
 JUMP_COMMAND(JAE, 18, a >= b)
 JUMP_COMMAND(JA, 19, a > b)
 
+// TODO: Why command with number 13 is under 14,15...?
 DEF_COMMAND(JMP, 13, 1,
     {
       *curPosition = arg.labelAddress;     
@@ -109,6 +149,7 @@ DEF_COMMAND(RND, 23, 0,
       PUSH(round(a));
     })
 
+// TODO: adoviy hardcode
 DEF_COMMAND(SCRN, 24, 0,
     {
       for (size_t y = 0; y <= 40; y++)

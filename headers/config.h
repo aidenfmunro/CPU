@@ -4,6 +4,7 @@
 #define DOUBLE_T
 #define logfilename "log.txt"
 
+// TODO: Should all the info below be in config file?
 typedef int ErrorCode;
 
 typedef char byte;
