@@ -289,3 +289,11 @@ size_t CheckFile(const char* filename)
       
     return INCORRECT;
 }
+
+int StringIsEmpty(const Line* line)
+{
+    for (size_t i = 0; i < line->length; i++)
+        if (!isspace(line->string[i]))
+            return 0;
+    return 1;
+}

@@ -36,13 +36,13 @@ size_t findLabel(Labels* labels, const char* labelName);
 
 RegNum getRegisterNum(const char symbol);
 
-ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum);
+ArgRes parseArgument(FILE* listingFile, char* argument, Labels* labels, size_t runNum);
 
 ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition);
 
 ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, size_t index, size_t* curPosition, Labels* lables, size_t runNum);
 
-ErrorCode parseRam(char** argument, ArgRes* arg, FILE* listingFile);
+ErrorCode parseRam(char** argument, ArgRes* arg);
 
 ErrorCode parseReg(char** argument, ArgRes* arg, size_t runNum, FILE* listingFile);
 
@@ -52,10 +52,10 @@ ErrorCode parseLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum
 
 ErrorCode parseImmedOrLabel(char** argument, ArgRes* arg, Labels* labels, size_t runNum, FILE* listingFile);
 
-ErrorCode emitCommand(int num, int argc, byte* byteode, ArgRes* arg, size_t* curPosition, size_t runNum);
+ErrorCode emitCommand(byte num, byte argc, byte* byteode, ArgRes* arg, size_t* curPosition);
 
 #define COMPILE_LOG(error) myOpen("log_compile.txt", "w", log_compile);                         \
-                    fprintf(log_compile, "Error code [%d] in line: %d\n", error, index + 1);    \
+                    fprintf(log_compile, "Error code [%u] in line: %ld\n", error, index + 1);    \
                     myClose(log_compile);
 
 #define FREE_EVERYTHING DestroyText(&assemblyText); free(bytecode); free(labels.label)
@@ -152,7 +152,7 @@ ErrorCode proccessLabel(char* curLine, Labels* labels, size_t* curPosition)
     return REPEATING_LABEL;    
 }
 
-size_t findLabel(Labels* labels, const char* labelName) // TODO: change size_t to a typedef
+size_t findLabel(Labels* labels, const char* labelName)
 {
     for (size_t i = 0; i < labels->count; i++)
       {
@@ -203,24 +203,20 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     size_t commandLength                 = 0;
 
-    char labelName[MAX_LABELNAME_LENGTH] = "";
-
     if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
 
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
       if (strcasecmp(#name, command) == 0)                                                                                  \
         {                                                                                                                   \
-          WRITE_LISTING(fprintf(listingFile, "%5ld %5s[0x%016lX] %4s", *curPosition, "", *curPosition, command));           \
+          WRITE_LISTING(fprintf(listingFile, "%5lu %5s[0x%016lX] %4s", *curPosition, "", *curPosition, command));           \
           ArgRes arg = parseArgument(listingFile, curLine + commandLength + 1,                                              \
-                                                                  curPosition,                                              \
-                                                                     bytecode,                                              \
                                                                        labels,                                              \
                                                                       runNum);                                              \
-          error = emitCommand(CMD_ ## name, argc, bytecode, &arg, curPosition, runNum);                                     \
+          error = emitCommand(CMD_ ## name, argc, bytecode, &arg, curPosition);                                             \
           WRITE_LISTING(fprintf(listingFile, "\n"));                                                                        \
           return OK;                                                                                                        \
-        }                                                                                                                   \                                                       
+        }                                                                                                                   \
         
     #include "commands.h"
 
@@ -229,7 +225,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
     return INCORRECT_SYNTAX; // TODO: emit code function, commands.h make a getarg function in spu    
 }
 
-ErrorCode emitCommand(int num, int argc, byte* bytecode, ArgRes* arg, size_t* curPosition, size_t runNum)
+ErrorCode emitCommand(byte num, byte argc, byte* bytecode, ArgRes* arg, size_t* curPosition)
 {
     *(bytecode + *curPosition) |= num;  
 
@@ -259,13 +255,13 @@ ErrorCode emitCommand(int num, int argc, byte* bytecode, ArgRes* arg, size_t* cu
 
 #define RETURN_ERROR_ARG(arg) if (arg.error != 0) return arg; 
 
-ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byte* bytecode, Labels* labels, size_t runNum)
+ArgRes parseArgument(FILE* listingFile, char* argument, Labels* labels, size_t runNum)
 {
     ArgRes arg = {};
 
     arg.argType = 0;
 
-    arg.error = parseRam(&argument, &arg, listingFile);
+    arg.error = parseRam(&argument, &arg);
 
     arg.error = parseReg(&argument, &arg, runNum, listingFile); RETURN_ERROR_ARG(arg);
 
@@ -274,7 +270,7 @@ ArgRes parseArgument(FILE* listingFile, char* argument, size_t* curPosition, byt
     return arg;
 }
 
-ErrorCode parseRam(char** argument, ArgRes* arg, FILE* listingFile)
+ErrorCode parseRam(char** argument, ArgRes* arg)
 {
     char* openBracketPtr  = strchr(*argument, '[');
     char* closeBracketPtr = strchr(*argument, ']');

@@ -125,7 +125,7 @@ ErrorCode execCommand(SPU* spu)
             #include "commands.h"
 
             default:
-                printf("Unknown command, code: %X, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
+                printf("Unknown command, code: %d, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
                 return EXIT_CODE;
         
         #undef DEF_COMMAND

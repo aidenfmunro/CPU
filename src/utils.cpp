@@ -17,14 +17,6 @@ bool isPointerValid(void *ptr)
     return msync(base, pageSize, MS_ASYNC) == 0; // call msync, if it returns non-zero, return false 
 }
 
-int StringIsEmpty(const Line* line)
-{
-    for (size_t i = 0; i < line->length; i++)
-        if (!isspace(line->string[i]))
-            return 0;
-    return 1;
-}
-
 #define EPS 1e-5
 
 bool doubleCompare(double a, double b)

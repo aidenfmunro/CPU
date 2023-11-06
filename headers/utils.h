@@ -3,8 +3,6 @@
 
 bool isPointerValid(void *ptr); 
 
-int StringIsEmpty(const Line* line);
-
 #define CheckPointerValidation(pointer)     \
     do                                      \
       {                                     \
