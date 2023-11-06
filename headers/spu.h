@@ -10,6 +10,8 @@ const int nSLOTS = 2048;
 
 const int EXIT_CODE = -1;
 
+const size_t RHX = 4;
+
 ErrorCode RunProgram(const char* filename);
 
 #endif

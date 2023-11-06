@@ -10,9 +10,8 @@
 struct ArgRes
 {
     elem_t* place;
-    elem_t value;
+    elem_t* value;
 
-    size_t labelAddress;
     ErrorCode error;
 };
 
@@ -22,7 +21,7 @@ struct SPU
 
     Stack calls;
 
-    elem_t regs[nREGS];
+    elem_t regs[nREGS + 1];
 
     elem_t RAM[nSLOTS];
     
@@ -141,17 +140,18 @@ ArgRes getArg(SPU* spu, byte command)
 
     elem_t tempvalue = 0;
 
+    spu->regs[RHX] = 0;
+
     if (command & ARG_FORMAT_REG)
       {
-        result.value += spu->regs[int(spu->code[spu->ip])];
+        spu->regs[RHX] += spu->regs[int(spu->code[spu->ip])];
         result.place = &spu->regs[int(spu->code[spu->ip])];
         spu->ip += sizeof(char);
       }
     if (command & ARG_FORMAT_IMMED)
       {
         memcpy(&tempvalue, &spu->code[spu->ip], sizeof(double));
-        result.value += tempvalue;
-        memcpy(&result.labelAddress, &spu->code[spu->ip], sizeof(double)); // wtf?
+        spu->regs[RHX] += tempvalue;
         spu->ip += sizeof(double);
       }
     if (command & ARG_FORMAT_RAM)
@@ -159,6 +159,8 @@ ArgRes getArg(SPU* spu, byte command)
         size_t index = (size_t)result.value;
         result.place = &spu->RAM[index];
       }
-    
+
+    result.value = &spu->regs[RHX];
+
     return result;
 }
