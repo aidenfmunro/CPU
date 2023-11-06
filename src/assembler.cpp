@@ -203,7 +203,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     size_t commandLength                 = 0;
 
-    if (sscanf(curLine, "%4s%ln", command, &commandLength) != 1)
+    if (sscanf(curLine, "%4s%n", command, &commandLength) != 1)
         return INCORRECT_SYNTAX;
 
     #define DEF_COMMAND(name, num, argc, code)                                                                              \
@@ -222,7 +222,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
 
     #undef DEF_COMMAND
 
-    return INCORRECT_SYNTAX; // TODO: emit code function, commands.h make a getarg function in spu    
+    return error; // TODO: emit code function, commands.h make a getarg function in spu    
 }
 
 ErrorCode emitCommand(byte num, byte argc, byte* bytecode, ArgRes* arg, size_t* curPosition)

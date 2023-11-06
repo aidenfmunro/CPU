@@ -37,7 +37,7 @@ ErrorCode placeCanary(Stack* stack, size_t place, canary_t canary)
     return OK;
 }
 
-canary_t* getCanaryRightptr(const Stack* stack)
+canary_t* getCanaryRightPtr(const Stack* stack)
 {
     return (canary_t*)(stack->data + stack->capacity);
 }
@@ -167,11 +167,11 @@ ErrorCode PrintStack(const Stack* stack)
 
     for (size_t i = 0; i < stack->capacity; i++)
     if (stack->data[i] == POISON)
-        printf("\t\t ! [%d] %" FORMAT " (POISON!)\n", i, stack->data[i]);
+        printf("\t\t ! [%lu] %" FORMAT " (POISON!)\n", i, stack->data[i]);
     else
-        printf("\t\t   [%d] %" FORMAT "\n", i, stack->data[i]);
+        printf("\t\t   [%lu] %" FORMAT "\n", i, stack->data[i]);
     
-    ON_DEBUG(printf("\tright data canary = %llx\n", *getCanaryRightptr(stack)));
+    ON_DEBUG(printf("\tright data canary = %llx\n", *getCanaryRightPtr(stack)));
 
     return OK;
 }
@@ -193,6 +193,9 @@ const char* stackStrError (const int code)
         CODE_ (CANARY_SIZE_CHANGED)
         CODE_ (CAPACITY_LESS_DEFAULT)
         CODE_ (HASH_CHANGED)
+
+        default:
+            break;
         }
 
     return "UNKNOWN";
@@ -211,11 +214,11 @@ ErrorCode stackDump(const Stack* stack, const char* filename, const int lineNum,
 
     int error = stackVerify(stack);
 
-    LOG(fp, "Stack " NAME " [%p], ERROR #%u (%s), in file %s, line %d, function: %s\n"
+    LOG(fp, "Stack " NAME " [%p], ERROR #%d (%s), in file %s, line %d, function: %s\n"
                 "{\n"
         ON_DEBUG("\tleft struct canary = 0x%llx\n")
-                 "\tsize = %llu\n"
-                 "\tcapacity = %llu\n"
+                 "\tsize = %lu\n"
+                 "\tcapacity = %lu\n"
         ON_DEBUG("\tright struct canary = 0x%llx\n")
                  "\n",
 
@@ -231,12 +234,12 @@ ErrorCode stackDump(const Stack* stack, const char* filename, const int lineNum,
         stack->data ON_DEBUG(, *getCanaryLeftPtr(stack)));
 
         for (size_t i = 0; i < stack->capacity; i++)
-          if (stack->data[i] == POISON)
-            LOG(fp, "\t\t ! [%d] %" FORMAT " (POISON!)\n", i, stack->data[i]);
+          if (isnan(stack->data[i]))
+            LOG(fp, "\t\t ! [%lu] %" FORMAT " (POISON!)\n", i, stack->data[i]);
           else
-            LOG(fp, "\t\t   [%d] %" FORMAT "\n", i, stack->data[i]);
+            LOG(fp, "\t\t   [%lu] %" FORMAT "\n", i, stack->data[i]);
     
-        ON_DEBUG(LOG(fp, "\tright data canary = 0x%llx\n", *getCanaryRightptr(stack)));
+        ON_DEBUG(LOG(fp, "\tright data canary = 0x%llx\n", *getCanaryRightPtr(stack)));
                  LOG(fp, "}\n");
 
     fclose(fp);
@@ -269,7 +272,7 @@ ErrorCode stackVerify(const Stack* stack)
 
     ON_DEBUG(CHECK_ERROR(*getCanaryLeftPtr(stack) != LEFT_DATA_CANARY, LCANARY_DATA_CHANGED, error));
 
-    ON_DEBUG(CHECK_ERROR(*getCanaryRightptr(stack) != RIGHT_DATA_CANARY, RCANARY_DATA_CHANGED, error));
+    ON_DEBUG(CHECK_ERROR(*getCanaryRightPtr(stack) != RIGHT_DATA_CANARY, RCANARY_DATA_CHANGED, error));
 
     ON_DEBUG(CHECK_ERROR(stack->leftCanary != LEFT_STRUCT_CANARY, LCANARY_STRUCT_CHANGED, error));
 
@@ -286,9 +289,9 @@ ErrorCode stackVerify(const Stack* stack)
 
 #undef CHECK_ERROR
 
-unsigned int hashAiden32(const Stack* stack)
+int hashAiden32(const Stack* stack)
 {
-    unsigned int hashSum = 1;
+    int hashSum = 1;
     
     for (size_t i = 0; i < stack->capacity * sizeof(elem_t); i++)
       {

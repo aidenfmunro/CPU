@@ -9,7 +9,7 @@
 
 typedef unsigned long long canary_t;
 
-const uint32_t MOD_AIDEN = 64;
+const int MOD_AIDEN = 64;
 
 const int MAX_STACK_SIZE = 4000 * 8;
 
@@ -159,10 +159,10 @@ ErrorCode stackVerify(const Stack* stk);
 
 ErrorCode stackDump(const Stack* stk, const char* filename, const int lineNum, const char* functionName);
 
-canary_t* getCanaryRightptr(const Stack* stack);
+canary_t* getCanaryRightPtr(const Stack* stack);
 
-canary_t* getCanaryLeftptr(const Stack* stack);
+canary_t* getCanaryLeftPtr(const Stack* stack);
 
-unsigned int hashAiden32(const Stack* stack);
+int hashAiden32(const Stack* stack);
 
 #endif

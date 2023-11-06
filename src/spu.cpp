@@ -156,7 +156,7 @@ ArgRes getArg(SPU* spu, byte command)
       }
     if (command & ARG_FORMAT_RAM)
       {
-        size_t index = (size_t)result.value;
+        size_t index = (size_t)spu->regs[RHX];
         result.place = &spu->RAM[index];
       }
 

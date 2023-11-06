@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <math.h>
-#include "textfuncs.h"
+#include "utils.h"
 
 bool isPointerValid(void *ptr) 
 {
