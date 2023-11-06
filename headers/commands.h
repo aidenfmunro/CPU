@@ -71,7 +71,7 @@ DEF_COMMAND(name, num, 1,                           \
       elem_t a = POP();                             \
                                                     \
       if (comparison)                               \
-          *curPosition = arg.labelAddress;         \
+          spu->ip = arg.labelAddress;         \
     })
 
 JUMP_COMMAND(JNE, 14, !doubleCompare(a, b))
@@ -83,19 +83,19 @@ JUMP_COMMAND(JA, 19, a > b)
 
 DEF_COMMAND(JMP, 13, 1,
     {
-      *curPosition = arg.labelAddress;     
+      spu->ip = arg.labelAddress;     
     })
 
 DEF_COMMAND(CALL, 20, 1,
     {
-      PUSHC(*curPosition);
+      PUSHC(spu->ip);
       
-      *curPosition = arg.labelAddress;
+      spu->ip = arg.labelAddress;
     })
 
 DEF_COMMAND(RET, 21, 0,
     {
-      *curPosition = POPC();
+      spu->ip = POPC();
     })
 
 DEF_COMMAND(MEOW, 22, 0,

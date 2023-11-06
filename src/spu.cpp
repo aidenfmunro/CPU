@@ -27,15 +27,17 @@ struct SPU
     elem_t RAM[nSLOTS];
     
     byte* code;
+
+    size_t ip;
 };
 
 ErrorCode CreateSPU(SPU* spu, const char* filename);
 
 ErrorCode DestroySPU(SPU* spu);
 
-ErrorCode execCommand(SPU* spu, size_t* position); 
+ErrorCode execCommand(SPU* spu); 
 
-ArgRes getArg(SPU* spu, size_t* curPosition, byte command);
+ArgRes getArg(SPU* spu, byte command);
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -43,9 +45,7 @@ ErrorCode RunProgram(const char* filename)
 
     CreateSPU(&spu, filename);
 
-    size_t curPosition = 0;
-
-    while (execCommand(&spu, &curPosition) != EXIT_CODE) {;}
+    while (execCommand(&spu) != EXIT_CODE) {;}
     
     DestroySPU(&spu);  
 
@@ -73,6 +73,8 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
     spu->stack = stack;
 
     spu->calls = calls;
+    
+    spu->ip = 0;
 
     myOpen(filename, "rb", codebin);
 
@@ -98,11 +100,11 @@ ErrorCode DestroySPU(SPU* spu)
     return OK;
 }
 
-ErrorCode execCommand(SPU* spu, size_t* curPosition)
+ErrorCode execCommand(SPU* spu)
 {    
     CheckPointerValidation(spu);
     
-    char command = *(spu->code + *curPosition);
+    char command = spu->code[spu->ip];
   
     switch (command & ARG_FORMAT_CMD)
       {
@@ -110,12 +112,12 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
                                                                                     \
             case number:                                                            \
               {                                                                     \
-              *curPosition += sizeof(char);                                         \
+              spu->ip += sizeof(char);                                              \
               ArgRes arg = {};                                                      \
                                                                                     \
               if (argc)                                                             \
                 {                                                                   \
-                  arg = getArg(spu, curPosition, command);                          \
+                  arg = getArg(spu, command);                                       \
                 }                                                                   \
                                                                                     \
                 code                                                                \
@@ -124,7 +126,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
             #include "commands.h"
 
             default:
-                printf("Unknown command, code: %X, line: %ld\n", command & ARG_FORMAT_CMD, *curPosition);
+                printf("Unknown command, code: %X, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
                 return EXIT_CODE;
         
         #undef DEF_COMMAND
@@ -133,7 +135,7 @@ ErrorCode execCommand(SPU* spu, size_t* curPosition)
     return OK;   
 }
 
-ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
+ArgRes getArg(SPU* spu, byte command)
 {
     ArgRes result = {};
 
@@ -141,16 +143,16 @@ ArgRes getArg(SPU* spu, size_t* curPosition, byte command)
 
     if (command & ARG_FORMAT_REG)
       {
-        result.value += spu->regs[int(spu->code[*curPosition])];
-        result.place = &spu->regs[int(spu->code[*curPosition])];
-        *curPosition += sizeof(char);
+        result.value += spu->regs[int(spu->code[spu->ip])];
+        result.place = &spu->regs[int(spu->code[spu->ip])];
+        spu->ip += sizeof(char);
       }
     if (command & ARG_FORMAT_IMMED)
       {
-        memcpy(&tempvalue, &spu->code[*curPosition], sizeof(double));
+        memcpy(&tempvalue, &spu->code[spu->ip], sizeof(double));
         result.value += tempvalue;
-        memcpy(&result.labelAddress,  &spu->code[*curPosition], sizeof(double)); // wtf?
-        *curPosition += sizeof(double);
+        memcpy(&result.labelAddress, &spu->code[spu->ip], sizeof(double)); // wtf?
+        spu->ip += sizeof(double);
       }
     if (command & ARG_FORMAT_RAM)
       {
