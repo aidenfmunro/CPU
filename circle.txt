@@ -22,33 +22,33 @@ hlt
         ja row
         ret
 
-    row:
-        call getRad
-        call draw
-        
-        push rcx
-        push 1
-        add
-        pop rcx
+        row:
+            call getRad
+            call draw
+            
+            push rcx
+            push 1
+            add
+            pop rcx
 
-        push rcx
-        push 40
+            push rcx
+            push 40
 
-        jb row
+            jb row
 
-        push rdx
-        push 1
-        add
-        pop rdx
+            push rdx
+            push 1
+            add
+            pop rdx
 
-        jmp col
+            jmp col
 
 draw:
     push rax
-    push 9.5 ;
+    push 7.5 ;
     jae back
     push rax
-    push 8
+    push 6
     jbe back
 
     push rcx

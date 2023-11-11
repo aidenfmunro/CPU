@@ -4,9 +4,9 @@
 #include "stackfuncs.h"
 #include "textfuncs.h"
 
-const int nREGS = 4;
+const int AMOUNT_OF_REGISTERS = 4;
 
-const int nSLOTS = 2048;
+const int AMOUNT_OF_RAM_SLOTS = 2048;
 
 const int EXIT_CODE = -1;
 

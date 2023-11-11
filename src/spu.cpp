@@ -9,11 +9,13 @@
 
 struct ArgRes
 {
-    elem_t* place;
+    elem_t* storePtr;
     elem_t* value;
 
     ErrorCode error;
 };
+
+const int HIDDEN_REG = 1;
 
 struct SPU
 {
@@ -21,9 +23,9 @@ struct SPU
 
     Stack calls;
 
-    elem_t regs[nREGS + 1];
+    elem_t regs[AMOUNT_OF_REGISTERS + HIDDEN_REG];
 
-    elem_t RAM[nSLOTS];
+    elem_t RAM[AMOUNT_OF_RAM_SLOTS];
     
     byte* code;
 
@@ -35,6 +37,8 @@ ErrorCode CreateSPU(SPU* spu, const char* filename);
 ErrorCode DestroySPU(SPU* spu);
 
 ErrorCode execCommand(SPU* spu); 
+
+ErrorCode dumpRAM(SPU* spu);
 
 ArgRes getArg(SPU* spu, byte command);
 
@@ -90,12 +94,34 @@ ErrorCode DestroySPU(SPU* spu)
 
     DestroyStack(&spu->calls);
 
-    memset(spu->RAM, 0, nSLOTS);
+    memset(spu->RAM, 0, AMOUNT_OF_RAM_SLOTS);
 
-    memset(spu->regs, 0, nREGS);
+    memset(spu->regs, 0, AMOUNT_OF_REGISTERS);
 
     free(spu->code);
 
+    return OK;
+}
+
+ErrorCode dumpRAM(SPU* spu)
+{
+    for (size_t y = 0; y <= 40; y++)
+    {
+        for (size_t x = 0; x <= 40; x++)
+        {
+            if (doubleCompare(spu->RAM[40 * y + x], 1))
+            {
+                printf("#  ");
+            }
+            else
+            {
+                printf(".  ");
+            }
+        }
+
+        printf("\n\n");
+    }
+    
     return OK;
 }
 
@@ -106,30 +132,31 @@ ErrorCode execCommand(SPU* spu)
     char command = spu->code[spu->ip];
   
     switch (command & ARG_FORMAT_CMD)
-      {
-        #define DEF_COMMAND(name, number, argc, code)                               \
-                                                                                    \
-            case number:                                                            \
-              {                                                                     \
-              spu->ip += sizeof(char);                                              \
-              ArgRes arg = {};                                                      \
-                                                                                    \
-              if (argc)                                                             \
-                {                                                                   \
-                  arg = getArg(spu, command);                                       \
-                }                                                                   \
-                                                                                    \
-                code                                                                \
-                break;                                                              \
-              }
-            #include "commands.h"
+    {
+        #define DEF_COMMAND(name, number, argc, code)                           \
+                                                                                \
+        case number:                                                            \
+        {                                                                       \
+            spu->ip += sizeof(char);                                            \
+            ArgRes arg = {};                                                    \
+                                                                                \
+            if (argc)                                                           \
+            {                                                                   \
+                arg = getArg(spu, command);                                     \
+            }                                                                   \
+                                                                                \
+            code                                                                \
+            break;                                                              \
+        }
 
-            default:
-                printf("Unknown command, code: %d, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
-                return EXIT_CODE;
+        #include "commands.h"
+
+        default:
+            printf("Unknown command, code: %d, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
+            return EXIT_CODE;
         
         #undef DEF_COMMAND
-      }
+    }
 
     return OK;   
 }
@@ -143,22 +170,24 @@ ArgRes getArg(SPU* spu, byte command)
     spu->regs[RHX] = 0;
 
     if (command & ARG_FORMAT_REG)
-      {
+    {
         spu->regs[RHX] += spu->regs[int(spu->code[spu->ip])];
-        result.place = &spu->regs[int(spu->code[spu->ip])];
+        result.storePtr = &spu->regs[int(spu->code[spu->ip])];
         spu->ip += sizeof(char);
-      }
+    }
+
     if (command & ARG_FORMAT_IMMED)
-      {
+    {
         memcpy(&tempvalue, &spu->code[spu->ip], sizeof(double));
         spu->regs[RHX] += tempvalue;
         spu->ip += sizeof(double);
-      }
+    }
+
     if (command & ARG_FORMAT_RAM)
-      {
+    {
         size_t index = (size_t)spu->regs[RHX];
-        result.place = &spu->RAM[index];
-      }
+        result.storePtr = &spu->RAM[index];
+    }
 
     result.value = &spu->regs[RHX];
 

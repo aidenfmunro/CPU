@@ -4,7 +4,7 @@ pop rax   ; f(n) = n * f(n-1)
 push rax
 push 0
 
-jb negativenum                    
+jb negativenum ; jump if the number is negative                   
 
 call factorial
 out
