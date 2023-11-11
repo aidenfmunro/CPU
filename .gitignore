@@ -1,7 +1,10 @@
 *.vscode
 *.out
-/simple.txt
-/log.txt
+simple.txt
+log.txt
+badappleasm.txt
+apple.txt
+listing.txt
 *.bin
 *.o
 .gitmodules

@@ -6,7 +6,7 @@
 
 const int AMOUNT_OF_REGISTERS = 4;
 
-const int AMOUNT_OF_RAM_SLOTS = 2048;
+const int AMOUNT_OF_RAM_SLOTS = 4096;
 
 const int EXIT_CODE = -1;
 
