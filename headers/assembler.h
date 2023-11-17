@@ -22,6 +22,6 @@ typedef int CommandCode;
 
 typedef char RegNum;
 
-ErrorCode Compile(const char* filename, const char* listingFileName);
+ErrorCode Compile(const char* filename, const char* listingFileName, const char* binfilename);
 
 #endif

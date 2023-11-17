@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     int amountOfFrames  = 2180;
     int amountOfSymbols = 101;
 
-    char* line = (char*)calloc(sizeof(char), 4 * amountOfSymbols);
+    char* line = (char*)calloc(sizeof(char), 2 * amountOfSymbols);
 
     for (size_t y = 0; y < amountOfFrames; y++)
     {

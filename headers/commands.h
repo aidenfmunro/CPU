@@ -115,5 +115,5 @@ DEF_COMMAND(RND, 23, 0,
 
 DEF_COMMAND(SCRN, 24, 0,
 {
-    dumpRAM(spu, renderer);
+    dumpRAM(spu GRAPHICS_ON(, renderer));
 })

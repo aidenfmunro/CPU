@@ -38,29 +38,32 @@ ErrorCode CreateSPU(SPU* spu, const char* filename);
 
 ErrorCode DestroySPU(SPU* spu);
 
-ErrorCode execCommand(SPU* spu, SDL_Renderer* renderer); 
+ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer)); 
 
-ErrorCode dumpRAM(SPU* spu, SDL_Renderer* renderer);
+ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer));
 
 ArgRes getArg(SPU* spu, byte command);
 
 ErrorCode RunProgram(const char* filename)
 {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    GRAPHICS_ON(SDL_Init(SDL_INIT_EVERYTHING); 
 
-    SDL_Window* window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 2020, 600, SDL_WINDOW_BORDERLESS);
+    SDL_Window* window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+                                          RECT_WIDTH * RAM_WIDTH, RECT_HEIGHT * RAM_HEIGHT,
+                                          SDL_WINDOW_BORDERLESS);
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0); 
 
     SDL_Event event;
 
     bool run = true;
+    )
 
     SPU spu = {};
 
     CreateSPU(&spu, filename);
 
-    while (run)
+    GRAPHICS_ON(while (run)
     {
         while(SDL_PollEvent(&event))
         {
@@ -71,19 +74,25 @@ ErrorCode RunProgram(const char* filename)
                     run = false;
                 }
             }
+    )
 
-            while (execCommand(&spu, renderer) != EXIT_CODE) {;}
+            while (execCommand(&spu GRAPHICS_ON(, renderer)) != EXIT_CODE) {;}
 
+    GRAPHICS_ON(
         }
     }
+    )
 
     // while (execCommand(&spu) != EXIT_CODE) {;}
     
-    DestroySPU(&spu);  
+    GRAPHICS_ON(
 
     SDL_DestroyWindow(window);
 
     SDL_Quit();
+    )
+
+    DestroySPU(&spu);  
 
     return OK;
 }
@@ -136,35 +145,42 @@ ErrorCode DestroySPU(SPU* spu)
     return OK;
 }
 
-ErrorCode dumpRAM(SPU* spu, SDL_Renderer* renderer)
+ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
 {
-    SDL_Rect rect = {.x = 0, .y = 0, .w = 20, .h = 20};
+    GRAPHICS_ON(SDL_Rect rect = {.x = 0, .y = 0, .w = RECT_WIDTH, .h = RECT_HEIGHT};)
 
-    for (size_t y = 0; y < 30; y++)
+    for (size_t y = 0; y < RAM_HEIGHT; y++)
     {
-        for (size_t x = 0; x < 101; x++)
+        for (size_t x = 0; x < RAM_WIDTH; x++)
         {
+            GRAPHICS_ON(
             rect.x = x * rect.w;
             rect.y = y * rect.h;
+            )
 
-            if (doubleCompare(spu->RAM[101 * y + x], 1))
+            if (doubleCompare(spu->RAM[RAM_WIDTH * y + x], 1))
             {
-                // printf("#");
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255 );
+                printf("#");
+
+                GRAPHICS_ON(
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
                 SDL_RenderFillRect(renderer, &rect);
 
                 SDL_RenderPresent(renderer);
+                )
             }
             else
             {
-                // printf(".");
+                printf(".");
 
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255 );
+                GRAPHICS_ON(
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
                 SDL_RenderFillRect(renderer, &rect);
 
                 SDL_RenderPresent(renderer);
+                )
 
             }
         }
@@ -172,15 +188,12 @@ ErrorCode dumpRAM(SPU* spu, SDL_Renderer* renderer)
         printf("\n");
     }
 
-    SDL_Delay(0.8);
-
-    // sleep(1.0); // delay
-    // printf("\e[1;1H\e[2J"); // clear terminal for console bad
+    GRAPHICS_ON(SDL_Delay(DELAY_FACTOR);)    
     
     return OK;
 }
 
-ErrorCode execCommand(SPU* spu, SDL_Renderer* renderer)
+ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
 {    
     CheckPointerValidation(spu);
     

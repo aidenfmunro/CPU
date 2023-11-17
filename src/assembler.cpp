@@ -70,7 +70,7 @@ do                                                                              
         return _error;                                                                                              \
 } while (0)
 
-ErrorCode Compile(const char* filename, const char* listingFileName)
+ErrorCode Compile(const char* filename, const char* listingFileName, const char* binfilename)
 {
     Text assemblyText = {};
 
@@ -117,7 +117,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName)
           }
       }  
     
-    myOpen("code.bin", "wb", codebin);
+    myOpen(binfilename, "wb", codebin);
 
     myWrite(bytecode, sizeof(byte), numLines * 2 * sizeof(elem_t), codebin);
 

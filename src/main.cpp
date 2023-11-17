@@ -1,14 +1,16 @@
 #include <stdio.h>
+
 #include "disassembler.h"
 #include "assembler.h"
 #include "spu.h"
 #include "utils.h"
 
-int main(void)
+int main(int argc, char* argv[])
 {
-    Compile("badappleasm.txt", "listing.txt");
+    if (argc == 4)
+    {
+        Compile(argv[1], argv[2], argv[3]);
 
-    RunProgram("code.bin");
-
-    // Disassemble("code.bin", "disasm_res");
+        RunProgram(argv[3]);
+    }
 }
