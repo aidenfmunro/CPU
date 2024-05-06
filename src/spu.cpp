@@ -1,13 +1,20 @@
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "stackfuncs.h"
 #include "spu.h"
 #include "config.h"
 #include "utils.h"
 #include "dsl.h"
-#include <SDL2/SDL.h>
+
+//
+
+const int HIDDEN_REG = 1;
+
+//
 
 struct ArgRes
 {
@@ -17,7 +24,6 @@ struct ArgRes
     ErrorCode error;
 };
 
-const int HIDDEN_REG = 1;
 
 struct SPU
 {
@@ -34,15 +40,19 @@ struct SPU
     size_t ip;
 };
 
-ErrorCode CreateSPU(SPU* spu, const char* filename);
+//
 
-ErrorCode DestroySPU(SPU* spu);
+ErrorCode CreateSPU         (SPU* spu, const char* filename);
 
-ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer)); 
+ErrorCode DestroySPU        (SPU* spu);
 
-ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer));
+ErrorCode execCommand       (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer)); 
 
-ArgRes getArg(SPU* spu, byte command);
+ErrorCode dumpRAM           (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer));
+
+ArgRes getArg               (SPU* spu, byte command);
+
+//
 
 ErrorCode RunProgram(const char* filename)
 {
@@ -82,8 +92,6 @@ ErrorCode RunProgram(const char* filename)
         }
     }
     )
-
-    // while (execCommand(&spu) != EXIT_CODE) {;}
     
     GRAPHICS_ON(
 
@@ -130,22 +138,22 @@ ErrorCode CreateSPU(SPU* spu, const char* filename)
     return OK;
 }
 
-ErrorCode DestroySPU(SPU* spu)
+ErrorCode DestroySPU (SPU* spu)
 {
-    DestroyStack(&spu->stack);
+    DestroyStack (&spu->stack);
 
-    DestroyStack(&spu->calls);
+    DestroyStack (&spu->calls);
 
-    memset(spu->RAM, 0, AMOUNT_OF_RAM_SLOTS);
+    memset (spu->RAM, 0, AMOUNT_OF_RAM_SLOTS);
 
-    memset(spu->regs, 0, AMOUNT_OF_REGISTERS);
+    memset (spu->regs, 0, AMOUNT_OF_REGISTERS);
 
-    free(spu->code);
+    free (spu->code);
 
     return OK;
 }
 
-ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
+ErrorCode dumpRAM (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
 {
     GRAPHICS_ON(SDL_Rect rect = {.x = 0, .y = 0, .w = RECT_WIDTH, .h = RECT_HEIGHT};)
 
@@ -158,7 +166,7 @@ ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
             rect.y = y * rect.h;
             )
 
-            if (doubleCompare(spu->RAM[RAM_WIDTH * y + x], 1))
+            if (doubleCompare (spu->RAM[RAM_WIDTH * y + x], 1))
             {
                 printf("#");
 
@@ -185,7 +193,7 @@ ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
             }
         }
 
-        printf("\n");
+        printf ("\n");
     }
 
     GRAPHICS_ON(SDL_Delay(DELAY_FACTOR);)    
@@ -193,7 +201,7 @@ ErrorCode dumpRAM(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
     return OK;
 }
 
-ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
+ErrorCode execCommand (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
 {    
     CheckPointerValidation(spu);
     
@@ -210,7 +218,7 @@ ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
                                                                                 \
             if (argc)                                                           \
             {                                                                   \
-                arg = getArg(spu, command);                                     \
+                arg = getArg (spu, command);                                    \
             }                                                                   \
                                                                                 \
             code                                                                \
@@ -220,7 +228,7 @@ ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
         #include "commands.h"
 
         default:
-            printf("Unknown command, code: %d, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
+            printf ("Unknown command, code: %d, line: %ld\n", command & ARG_FORMAT_CMD, spu->ip);
             return EXIT_CODE;
         
         #undef DEF_COMMAND
@@ -229,7 +237,7 @@ ErrorCode execCommand(SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
     return OK;   
 }
 
-ArgRes getArg(SPU* spu, byte command)
+ArgRes getArg (SPU* spu, byte command)
 {
     ArgRes result = {};
 
@@ -246,7 +254,7 @@ ArgRes getArg(SPU* spu, byte command)
 
     if (command & ARG_FORMAT_IMMED)
     {
-        memcpy(&tempvalue, &spu->code[spu->ip], sizeof(double));
+        memcpy (&tempvalue, &spu->code[spu->ip], sizeof(double));
         spu->regs[RHX] += tempvalue;
         spu->ip += sizeof(double);
     }

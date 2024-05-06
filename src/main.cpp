@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "disassembler.h"
 #include "assembler.h"
 #include "spu.h"
 #include "utils.h"

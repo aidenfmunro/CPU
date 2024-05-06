@@ -26,7 +26,6 @@ const double DELAY_FACTOR = 0.8;
 
 ErrorCode RunProgram(const char* filename);
 
-#define GRAPHICS
 
 #ifdef GRAPHICS
     #define GRAPHICS_ON(...) \
