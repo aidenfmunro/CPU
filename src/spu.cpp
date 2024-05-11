@@ -219,9 +219,12 @@ ErrorCode execCommand (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
             if (argc)                                                           \
             {                                                                   \
                 arg = getArg (spu, command);                                    \
+                                                                                \
             }                                                                   \
                                                                                 \
             code                                                                \
+             printf("RAM [12]: %lg\n", spu->RAM[12]);                           \
+             PrintStack (&spu->stack);                                           \
             break;                                                              \
         }
 
@@ -232,7 +235,11 @@ ErrorCode execCommand (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
             return EXIT_CODE;
         
         #undef DEF_COMMAND
+
+
     }
+
+    
 
     return OK;   
 }
@@ -262,8 +269,13 @@ ArgRes getArg (SPU* spu, byte command)
     if (command & ARG_FORMAT_RAM)
     {
         size_t index = (size_t)spu->regs[RHX];
+
+        printf("index: %llu\n", index);
         result.storePtr = &spu->RAM[index];
+
+        spu->regs[RHX] = spu->RAM[index];
     }
+
 
     result.value = &spu->regs[RHX];
 

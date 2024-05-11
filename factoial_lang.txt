@@ -1,0 +1,12 @@
+push 0
+push 11
+pop rbx
+
+push 3
+
+pop [rbx + 1]
+
+push [rbx + 1]
+out
+
+hlt

@@ -217,7 +217,7 @@ ErrorCode proccessLine(Text* assemblyText, FILE* listingFile, byte* bytecode, si
         ArgRes arg = parseArgument (listingFile, curLine + commandLength + 1,                                             \
                                                                       labels,                                             \
                                                                      runNum);                                             \
-        RETURN_ERROR(arg.error);                                                                                          \
+        /* RETURN_ERROR(arg.error); */                                                                                          \
         error = emitCommand (CMD_ ## name, argc, bytecode, &arg, curPosition);                                            \
         WRITE_LISTING(fprintf(listingFile, "\n"));                                                                        \
         return OK;                                                                                                        \
@@ -267,9 +267,9 @@ ArgRes parseArgument (FILE* listingFile, char* argument, Labels* labels, size_t 
 
     arg.error = parseRam (&argument, &arg);
 
-    arg.error = parseReg (&argument, &arg, runNum, listingFile); RETURN_ERROR_ARG(arg);
+    arg.error = parseReg (&argument, &arg, runNum, listingFile); // RETURN_ERROR_ARG(arg);
 
-    arg.error = parseImmedOrLabel (&argument, &arg, labels, runNum, listingFile); RETURN_ERROR_ARG(arg);
+    arg.error = parseImmedOrLabel (&argument, &arg, labels, runNum, listingFile); // RETURN_ERROR_ARG(arg);
     
     return arg;
 }
@@ -331,17 +331,17 @@ ErrorCode parseReg (char** argument, ArgRes* arg, size_t runNum, FILE* listingFi
 
 ErrorCode parseImmedOrLabel (char** argument, ArgRes* arg, Labels* labels, size_t runNum, FILE* listingFile)
 {
+    char* plusPtr = strchr (*argument, '+');
+
+    if (plusPtr)
+        *argument = plusPtr + 1;
+
     ErrorCode temperror = parseImmed (argument, arg);
 
     if ((arg->argType & ARG_FORMAT_IMMED) == 0 && (arg->argType & ARG_FORMAT_REG) == 0)  
         parseLabel (argument, arg, labels, runNum);
     else
         arg->error = temperror;
-    
-    char* plusPtr = strchr (*argument, '+');
-
-    if (plusPtr)
-        *argument = plusPtr + 1;
     
     WRITE_LISTING(fprintf (listingFile, "%5s%lg", "", arg->immed));
     

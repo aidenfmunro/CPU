@@ -21,7 +21,7 @@ factorial:
 
     push rax
     push 1
-    sub
+        SUB
     pop rax
 
     call factorial
