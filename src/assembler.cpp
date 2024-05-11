@@ -112,12 +112,12 @@ ErrorCode Compile(const char* filename, const char* listingFileName, const char*
         for (size_t index = 0; index < numLines; index++)
         {
             error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum);
-            if (error)
-            {
-                FREE_EVERYTHING;
-                COMPILE_LOG(error);
-                RETURN_ERROR(error);
-            }
+            // if (error)
+            // {
+            //     FREE_EVERYTHING;
+            //     COMPILE_LOG(error);
+            //     RETURN_ERROR(error);
+            // }
         }
     }  
     

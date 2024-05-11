@@ -1,0 +1,233 @@
+; preamble
+
+push 1000 ; RAM starting point
+pop rax   ; set RAM counter
+
+jmp main  ; program start
+
+main:
+	push 0
+	pop [rax + 0] ; a assign
+	push 0
+	pop [rax + 1] ; b assign
+	push 0
+	pop [rax + 2] ; c assign
+	in
+	pop [rax + 0] ; input var a
+
+	in
+	pop [rax + 1] ; input var b
+
+	in
+	pop [rax + 2] ; input var c
+
+	push 0
+	pop [rax + 3] ; x assign
+	push [rax + 0] ; a
+
+	push 0
+	jne L0
+	push [rax + 1] ; b
+
+	push [rax + 2] ; c
+
+
+	push rax ; stack frame prologue
+	push 4
+	add
+	pop rax
+
+
+	call lineareq
+
+
+	push rax ; stack frame epilogue
+	push 4
+	sub
+	pop rax
+
+	pop [rax + 3] ; x assign
+L0:   ; end if
+	push [rax + 0] ; a
+
+	push 0
+	je L1
+	push [rax + 0] ; a
+
+	push [rax + 1] ; b
+
+	push [rax + 2] ; c
+
+
+	push rax ; stack frame prologue
+	push 4
+	add
+	pop rax
+
+
+	call quadreq
+
+
+	push rax ; stack frame epilogue
+	push 4
+	sub
+	pop rax
+
+	pop [rax + 3] ; x assign
+L1:   ; end if
+
+	hlt
+
+lineareq:
+	pop [rax + 0] ; b
+
+	pop [rax + 1] ; c
+
+	push [rax + 0] ; b
+
+	push 0
+	jne L2
+	push [rax + 1] ; c
+
+	push 0
+	je L2
+	push 1
+	out
+L2:   ; end if
+	push [rax + 1] ; c
+
+	push 0
+	jne L3
+	push 1
+	out
+	push 0
+	out
+L3:   ; end if
+L4:   ; end if
+	push [rax + 0] ; b
+
+	push 0
+	je L5
+	push [rax + 1] ; c
+
+	push [rax + 1] ; c
+
+	SUB
+	push [rax + 1] ; c
+
+	SUB
+	push [rax + 0] ; b
+
+	DIV
+	pop [rax + 2] ; x assign
+	push [rax + 2] ; x
+
+	out
+L5:   ; end if
+	push 1
+	ret
+
+
+quadreq:
+	pop [rax + 0] ; a
+
+	pop [rax + 1] ; b
+
+	pop [rax + 2] ; c
+
+	push [rax + 1] ; b
+
+	push [rax + 1] ; b
+
+	MUL
+	push 4
+	push [rax + 0] ; a
+
+	MUL
+	push [rax + 2] ; c
+
+	MUL
+	SUB
+	pop [rax + 3] ; d assign
+	push [rax + 3] ; d
+
+	out
+	push [rax + 3] ; d
+
+	push 0
+	jae L6
+	push 0
+	out
+L6:   ; end if
+	push [rax + 3] ; d
+
+	push 0
+	jne L7
+	push [rax + 1] ; b
+
+	push [rax + 1] ; b
+
+	SUB
+	push [rax + 1] ; b
+
+	SUB
+	push 2
+	push [rax + 0] ; a
+
+	MUL
+	DIV
+	pop [rax + 4] ; x assign
+	push [rax + 4] ; x
+
+	out
+L7:   ; end if
+	push [rax + 3] ; d
+
+	push 0
+	jbe L8
+	push [rax + 1] ; b
+
+	push [rax + 1] ; b
+
+	SUB
+	push [rax + 1] ; b
+
+	SUB
+	pop [rax + 4] ; bm assign
+	push [rax + 3] ; d
+
+	SQRT
+	pop [rax + 5] ; ds assign
+	push [rax + 4] ; bm
+
+	push [rax + 5] ; ds
+
+	ADD
+	push 2
+	push [rax + 0] ; a
+
+	MUL
+	DIV
+	pop [rax + 6] ; x assign
+	push [rax + 4] ; bm
+
+	push [rax + 5] ; ds
+
+	SUB
+	push 2
+	push [rax + 0] ; a
+
+	MUL
+	DIV
+	pop [rax + 7] ; y assign
+	push [rax + 6] ; x
+
+	out
+	push [rax + 7] ; y
+
+	out
+L8:   ; end if
+	push 1
+	ret
+
+

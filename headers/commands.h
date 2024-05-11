@@ -38,7 +38,7 @@ DEF_COMMAND(DIV, 7, 0,
     elem_t b = POP();
     elem_t a = POP();
     if (!doubleCompare(b, 0))
-        PUSH(a / b);    
+        PUSH(b / a);    
     else
       return ZERO_DIVISION;  
 })
