@@ -223,8 +223,6 @@ ErrorCode execCommand (SPU* spu GRAPHICS_ON(, SDL_Renderer* renderer))
             }                                                                   \
                                                                                 \
             code                                                                \
-             printf("RAM [12]: %lg\n", spu->RAM[12]);                           \
-             PrintStack (&spu->stack);                                           \
             break;                                                              \
         }
 

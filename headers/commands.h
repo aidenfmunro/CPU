@@ -6,8 +6,6 @@ DEF_COMMAND(PUSH, 1, 1,
 DEF_COMMAND(POP, 2, 1,
 {
     *arg.storePtr = POP();
-
-    printf("value: %lg\n", *arg.storePtr);
 })
 
 DEF_COMMAND(IN, 3, 0,  
