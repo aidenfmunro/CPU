@@ -114,6 +114,7 @@ ErrorCode Compile(const char* filename, const char* listingFileName, const char*
             error = proccessLine(&assemblyText, listingFile, bytecode, index, &curPosition, &labels, runNum);
             if (error)
             {
+                FREE_EVERYTHING;
                 COMPILE_LOG(error);
                 RETURN_ERROR(error);
             }

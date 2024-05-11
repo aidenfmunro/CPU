@@ -1,0 +1,75 @@
+; preamble
+
+push 1000 ; RAM starting point
+pop rax   ; set RAM counter
+
+jmp main  ; program start
+
+main:
+	push 0
+	pop [rax + 0] ; y assign
+	in
+	pop [rax + 0] ; input var y
+
+	push [rax + 0] ; y
+
+
+	push rax ; stack frame prologue
+	push 1
+	add
+	pop rax
+
+
+	call factorial
+
+
+	push rax ; stack frame epilogue
+	push 1
+	sub
+	pop rax
+
+	pop [rax + 1] ; x assign
+	push [rax + 1] ; x
+
+	out
+
+	hlt
+
+factorial:
+	pop [rax + 0] ; a
+
+	push [rax + 0] ; a
+
+	push 0
+	jne L0
+	push 1
+	ret
+
+L0:   ; end if
+	push [rax + 0] ; a
+
+	push [rax + 0] ; a
+
+	push 1
+	SUB
+
+	push rax ; stack frame prologue
+	push 1
+	add
+	pop rax
+
+
+	call factorial
+
+
+	push rax ; stack frame epilogue
+	push 1
+	sub
+	pop rax
+
+	MUL
+	ret
+
+
+
+

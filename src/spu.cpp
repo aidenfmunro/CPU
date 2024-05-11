@@ -268,7 +268,6 @@ ArgRes getArg (SPU* spu, byte command)
     {
         size_t index = (size_t)spu->regs[RHX];
 
-        printf("index: %llu\n", index);
         result.storePtr = &spu->RAM[index];
 
         spu->regs[RHX] = spu->RAM[index];
