@@ -1,113 +1,213 @@
-## Введение
-Данный проект посвящен написанию собственной виртуальной машины, которая симулирует работу процессора. Всего три программы: ассемблер, дизассемблер и машина.
+## Introduction 
+This project is dedicated to creating my own simplified virtual machine that simulates the work of a single processor unit. The project is split into three seperate programs: an assembler, a disassembler, and the machine itself. Here you can see a visualization of the units:
+
+![](img/spu_diagram.png)
+
 
 ## Assembler
-Ассемблер переводит язык ассемблерный в машинный код, далее будет приведён перечень правил написания на нём:
 
-1. Допускаются пустые строки.
+The assembler translates my assembly language code into my virtual machine's binary code. Let me describe syntax rules:
 
-2. Допускаются однострочные комментарии с помощью знака ';', приведу пример (будьте аккуратны с именами, начинающимися на inf и nan!):
+1. Empty lines are allowed.
+
+2. Single-line comments can be made using the '**;**' char (**be careful** with names starting with **inf** and **nan**).
 
 ```
+
 push rax ; push value from register rax
+
 ```
-3. Имена меток заканчиваются знаком ':', приведу пример:
+
+3. Label names end with a '**:**'.
+
 ```
-main: <- correct label name
+
+main:    ; correct label name
+
 ```
-4. Список всех команд:
+4. List of all commands:
 
-push и pop:
+**PUSH**:
 ```
-push          <- положить что-то в стек
+push            <- put to the value stack
 
-push 1        <- число 
-            
-push rax      <- число из регистра
+push 1          <- number
 
-push [1]      <- число из 1о ячейки RAM 
+push rax        <- number from register
 
-push [rax]    <- число из ячейки с номером числа в rax RAM
+push [1]        <- value from RAM cell 1
 
-push [rax+1]  <- число из ячейки с номером числа в rax + 1 RAM
-``` 
+push [rax]      <- number from the cell with the number stored in rax in RAM
+
+push [rax + 1]  <- number from the cell with the number stored in rax + 1 in RAM
+
 ```
-pop           <- взять число из стека (верхнее)
 
-~ аналогично push'у ~
+Same syntax can be applied to **POP**:
+
 ```
-команды без аргумента:
+pop           <-  pop value from value stack
+
 ```
-in            <- ввод числа
+commands without arguments:
 
-out           <- вывод верхнего числа со стека
+```
+in            <- input number
 
-hlt           <- остановка программы
+out           <- output the top number from the stack
 
-add           <- сумма двух верхни чисел
+hlt           <- stop program
 
-sub           <- разность двух верних чисел
+add           <- sum of the top two numbers
 
-mul           <- умножение двух верхних чисел
+sub           <- difference of the top two numbers
 
-div           <- частность двух верхних чисел
+mul           <- multiplication of the top two numbers
 
-sqrt          <- корень числа
+div           <- division of the top two numbers
 
-sin           <- синус числа
+sqrt          <- square root of a number
 
-cos           <- косинус числа
+sin           <- sine of a number
+
+cos           <- cosine of a number
+
+rnd           <- round number
  
 ```
-команды перехода (их два типа: условные и безусловные):
+**Jump** commands (two types: conditional and unconditional):
+
+Unconditional:
+
 ```
-jmp           <- прыжок на метку 
+jmp           <- jump to certain label
 
-ja            <- прыжок, елси x > y (условный)
+call          <- jump, the return address is pushed onto the call stack
 
-jae           <- прыжок, елси x >= y (условный)
+ret           <- return jump to the address at the top of the call stack 
 
-jb            <- прыжок, елси x < y (условный)
-
-jbe           <- прыжок, елси x <= y (условный)
-
-je            <- прыжок, елси x = y (условный)
-
-jne           <- прыжок, елси x != y (условный)
-
-call          <- прыжок, в call стек кладется адрес возврата 
-
-ret           <- прыжок по перхнему адресу call стек 
 ```
-существуют два стека: для чисел и для адресов возврата.
 
-## Disassembler
-Переводит байт код в файл с командами и аргументами.
+Conditional:
+
+```
+
+ja            <- jump if x > y 
+
+jae           <- jump if x >= y 
+
+jb            <- jump if x < y 
+
+jbe           <- jump if x <= y 
+
+je            <- jump if x == y 
+
+jne           <- jump if x != y 
+
+
+```
+
+Other commands:
+
+```
+
+meow          <- print "meow :3"          
+
+scrn          <- dump video memory 
+
+```
+
+<details>
+  <summary> Full list of instructions with their hex value </summary>
+
+| Instruction name | Hex represantation |
+|------------------|--------------------|
+| PUSH             | 0x01               |
+| POP              | 0x02               |
+| IN               | 0x03               |
+| ADD              | 0x04               |
+| SUB              | 0x05               |
+| MUL              | 0x06               |
+| DIV              | 0x07               |
+| SQRT             | 0x08               |
+| SIN              | 0x09               |
+| COS              | 0x0A               |
+| OUT              | 0x0B               |
+| HLT              | 0x0C               |
+| JMP              | 0x0D               |
+| JNE              | 0x0E               |
+| JE               | 0x0F               |
+| JBE              | 0x10               |
+| JB               | 0x11               |
+| JAE              | 0x12               |
+| JA               | 0x13               |
+| CALL             | 0x14               |
+| RET              | 0x15               |
+| MEOW             | 0x16               |
+| RND              | 0x17               |
+| SCRN             | 0x18               |
+
+</details>
 
 ## SPU
 
-Исполняет побайтово код. Байт код неравномерный, сначала процессор считывает байт команды, в этом же байте маскируются информация о том, есть ли в аргументе регистр, обращение к оперативке, значение.
-~~~
-[]                   | []             | [] [] [] [] [] [] [] []
-код комманды и флаги | номер регистра | значение аргумента
-([] - 1 байт) 
-~~~
+Executes code byte by byte. Variable length bytecode. The processor first reads the command byte and information about whether there is a register reference, memory access, value is masked in that same byte. 
+
+Two stacks are used: 1st for calculations and 2nd for calls. This decision was made due to shortage of time during the semester (at least that's what I remember). You can look at my stack implementation here: [stack repo](https://github.com/aidenfmunro/Stack). 
+
+RAM, stack & registers are all double value based. Meaning 8 bytes for immediate value is used.
+
+How does the bytecode work:
+
+![](img/bin_diagram.png)
 
 ---
-Также хочу обратить на единую систему команд в ассемблере, машине и дизассемблере. Все команды представлены в едином формате. Заметим, что код в этих трёх программах одинаков (ctrl + c, ctrl + v), поэтому было принято решение использовать кодогенерацию с помощью #include.
 
-Как это выглядит? В файле commands.h:
+I also want to point out the unified command system in the assembler, machine, and disassembler. All commands are presented in a single format. Note that the code in these three programs is the same, so the decision was made to use code generation with #include.
+
+What does this look like? In the [commands.h](headers/commands.h) file:
+
 ```
+
 DEF_COMMAND(name, num, argc, code)
 
-name          <- название команды
+name          <- command name
 
-num           <- номер команды
+num           <- command number
 
-argc          <- наличие аргумента (0 или 1)
+argc          <- argument presence (0 or 1)
 
-code          <- код команды
+code          <- command code
+
 ```
+
+## Disassembler (WIP)
+
+Converts bytecode into a file with commands and arguments. Currently the program is broken, fixes will be done.
+
+## Build
+
+```
+
+make dirs
+
+make
+
+./main input_file.txt input_file_listing.txt input_file.bin
+
+```
+
+## System specs
+
+CPU: AMD Ryzen 7 5800HS with Radeon Graphics, 3201 Mhz, 8 Core(s), 16 Logical Processor(s)
+
+RAM: 16.0 GB
+
+OS: Ubuntu 22.04 (WSL)
+
+Compiler: g++ 11.4.0
+
+
 
 
 
