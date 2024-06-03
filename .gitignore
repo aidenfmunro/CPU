@@ -1,12 +1,7 @@
 *.vscode
 *.out
-simple.txt
 log.txt
-badappleasm.txt
-apple.txt
 listing.txt
 *.bin
 *.o
 .gitmodules
-newcircle.txt
-badappleascii.txt
