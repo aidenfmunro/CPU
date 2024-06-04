@@ -5,3 +5,4 @@ listing.txt
 *.bin
 *.o
 .gitmodules
+main
